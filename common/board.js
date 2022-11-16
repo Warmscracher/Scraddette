@@ -8,10 +8,10 @@ import { censor } from "./automod.js";
 import { userSettingsDatabase } from "../commands/settings.js";
 import giveXp from "./xp.js";
 
-export const BOARD_EMOJI = "🥔";
+export const BOARD_EMOJI = "🍡";
 /** @param {import("discord.js").TextBasedChannel} [channel] */
 export function boardReactionCount(channel) {
-	const COUNTS = { scradd: 2, devs: 6, modsPlus: 5, mods: 4, admins: 3, default: 8 };
+	const COUNTS = { scradd: 2, devs: 2, modsPlus: 2, mods: 2, admins: 2, default: 3 };
 	if (process.env.NODE_ENV !== "production") return COUNTS.scradd;
 	if (!channel) return COUNTS.default;
 	const baseChannel = getBaseChannel(channel);
