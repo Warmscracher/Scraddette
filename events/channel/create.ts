@@ -6,7 +6,7 @@ import type Event from "../../common/types/event";
 const event: Event<"channelCreate"> = async function event(channel) {
 	if (channel.guild.id !== CONSTANTS.guild.id) return;
 	await log(
-		`📃 ${
+		`<:createchannel:1041829328809361560> ${
 			{
 				[ChannelType.GuildText]: "Text",
 				[ChannelType.GuildVoice]: "Voice",
