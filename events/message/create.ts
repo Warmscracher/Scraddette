@@ -332,7 +332,7 @@ const event: Event<"messageCreate"> = async function event(message) {
 		).test(content);
 	}
 
-	if (includes("dango")) react("🍡");
+	if (includes("potato")) react("🥔");
 	if (includes(/av[ao]cado/)) react("🥑");
 
 	if (
