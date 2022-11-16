@@ -9,7 +9,7 @@ const event: Event<"stageInstanceUpdate"> = async function event(oldInstance, ne
 	if (!oldInstance || guild.id !== CONSTANTS.guild.id) return;
 
 	if (oldInstance.topic !== newInstance.topic) {
-		log(`✏ Stage ${newInstance.channel?.toString()}’s topic was changed!`, "voice", {
+		log(`<:updatestage:1042403128705810462> Stage ${newInstance.channel?.toString()}’s topic was changed!`, "voice", {
 			files: [
 				{
 					attachment: Buffer.from(
