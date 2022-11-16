@@ -10,6 +10,6 @@ const event: Event<"stageInstanceCreate"> = async function event(instance) {
 	const guild = instance.guild || (await client.guilds.fetch(instance.guildId));
 	if (guild.id !== CONSTANTS.guild.id || ALREADY_ENDED.has(instance.id)) return;
 	ALREADY_ENDED.add(instance.id);
-	await log(`📷 Stage ${instance.channel?.toString()} is no longer live!`, "voice");
+	await log(`<:endstage:1042404390012735550> Stage ${instance.channel?.toString()} is no longer live!`, "voice");
 };
 export default event;
