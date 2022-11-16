@@ -12,7 +12,7 @@ const event: Event<"guildScheduledEventCreate"> = async function event(event) {
 		end = event.scheduledEndAt;
 
 	await log(
-		`🗓 Event ${event.name} scheduled${
+		`<:createevent:1042389397879926824> Event ${event.name} scheduled${
 			start || end
 				? ` for ${time(start || end || new Date())}${end && start ? "-" + time(end) : ""}`
 				: ""
