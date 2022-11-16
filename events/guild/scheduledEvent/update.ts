@@ -23,7 +23,7 @@ const event: Event<"guildScheduledEventUpdate"> = async function event(oldEvent,
 		);
 
 	if (oldEvent.description !== newEvent.description)
-		log(`📆 Event ${oldEvent.name}’s description was changed!`, "voice", {
+		log(`<:updateevent:1041829464704827392> Event ${oldEvent.name}’s description was changed!`, "voice", {
 			files: [
 				{
 					attachment: Buffer.from(
@@ -45,7 +45,7 @@ const event: Event<"guildScheduledEventUpdate"> = async function event(oldEvent,
 		const coverImageURL = newEvent.coverImageURL({ size: 128 });
 		const response = coverImageURL && (await fetch(coverImageURL));
 		await log(
-			`📆 Event ${oldEvent.name}’s cover image was ${response ? `changed` : "removed"}!`,
+			`<:updateevent:1041829464704827392> Event ${oldEvent.name}’s cover image was ${response ? `changed` : "removed"}!`,
 			"voice",
 			{ files: response ? [Buffer.from(await response.arrayBuffer())] : [] },
 		);
@@ -68,6 +68,6 @@ const event: Event<"guildScheduledEventUpdate"> = async function event(oldEvent,
 		);
 	}
 
-	await Promise.all(logs.map((edit) => log(`📆 Event ${oldEvent.name}${edit}!`, "voice")));
+	await Promise.all(logs.map((edit) => log(`<:updateevent:1041829464704827392> Event ${oldEvent.name}${edit}!`, "voice")));
 };
 export default event;
