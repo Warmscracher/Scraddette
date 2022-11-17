@@ -51,7 +51,7 @@ const badWords = [
 	],
 	[
 		[
-			/fu[vr]+g(?!nx(?:v|r))/,
+			/fu(?:v|r)+g(?!nx(?:v|r))/,
 			/puvat ?(punat ?)?puba/,
 			/rwnphyngr/,
 			/fcyb+tr/,
@@ -70,14 +70,13 @@ const badWords = [
 			/dhrrs/,
 			/wnpx ?bss/,
 			/wrex ?bss/,
-			/ovg?[pf]u/,
+			/ovg?(?:p|f)u/,
 		],
 		[
 			/xlf/,
-			/[8o]=+Q/,
+			/(?:8|o)=+Q/,
 			/nefryvpx(?:vat|ref?)?/,
 			/fzhg+(?:vr|e|fg?|l)?/,
-			/(?:(?:onq|sng|wnpx|wvir|xvpx|ynzc|yneq|gvtug|jvfr|fzneg|qhzo) ?)?n(?:ff|efr)(?: ?(?:pybja|snpr|ung|ubyr|ybnq|enz(?:z(?:re)?(?:vat)?)?|jvcr)f?|r(?:el|fq?))?/,
 			/vawhaf?/,
 			/pbpx(?: ?svtug|fhpx|(?:svtug|fhpx)(?:re|vat)|znafuvc|hc)?f?/,
 			/fcvpf?/,
@@ -117,7 +116,7 @@ function decodeRegexes(regexes) {
 	return regexes
 		.map(({ source }) =>
 			caesar(source).replaceAll(
-				/[ouetsialh]/gi,
+				/[aehilosu ]/gi,
 				(letter) =>
 					({
 						"a": "[*@a]",
