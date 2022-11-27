@@ -16,14 +16,14 @@ const event: Event<"messageUpdate"> = async function event(oldMessage, newMessag
 	const logs = [];
 	if (oldMessage.flags.has("Crossposted") !== newMessage.flags.has("Crossposted")) {
 		logs.push(
-			`📢 Message by ${newMessage.author.toString()} in ${newMessage.channel.toString()} ${
+			`<:announce:1041828374106099732> Message by ${newMessage.author.toString()} in ${newMessage.channel.toString()} ${
 				newMessage.flags.has("Crossposted") ? "" : "un"
 			}published`,
 		);
 	}
 	if (oldMessage.flags.has("SuppressEmbeds") !== newMessage.flags.has("SuppressEmbeds")) {
 		log(
-			`🗄 Embeds ${
+			`<:list:1042393038619693147> Embeds ${
 				newMessage.flags.has("SuppressEmbeds") ? "removed" : "shown"
 			} on message by ${newMessage.author.toString()} in ${newMessage.channel.toString()}` +
 				"!",
@@ -53,7 +53,7 @@ const event: Event<"messageUpdate"> = async function event(oldMessage, newMessag
 		oldMessage.pinned !== newMessage.pinned
 	) {
 		logs.push(
-			`📌 Message by ${newMessage.author.toString()} in ${newMessage.channel.toString()} ${
+			`<:pin:1041828756127498313> Message by ${newMessage.author.toString()} in ${newMessage.channel.toString()} ${
 				newMessage.pinned ? "" : "un"
 			}pinned`,
 		);
@@ -90,7 +90,7 @@ const event: Event<"messageUpdate"> = async function event(oldMessage, newMessag
 
 		if (files.length)
 			log(
-				`✏ Message by ${newMessage.author.toString()} in ${newMessage.channel.toString()} edited!`,
+				`<:edit:1042391777241477210> Message by ${newMessage.author.toString()} in ${newMessage.channel.toString()} edited!`,
 				"messages",
 				{
 					files,
