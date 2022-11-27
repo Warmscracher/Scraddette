@@ -23,29 +23,35 @@ const event: Event<"guildScheduledEventUpdate"> = async function event(oldEvent,
 		);
 
 	if (oldEvent.description !== newEvent.description)
-		log(`<:updateevent:1041829464704827392> Event ${oldEvent.name}’s description was changed!`, "voice", {
-			files: [
-				{
-					attachment: Buffer.from(
-						difflib
-							.unifiedDiff(
-								(oldEvent.description || "").split("\n"),
-								(newEvent.description || "").split("\n"),
-							)
-							.join("\n")
-							.replace(/^--- \n{2}\+\+\+ \n{2}@@ .+ @@\n{2}/, ""),
-						"utf-8",
-					),
-					name: "description.diff",
-				},
-			],
-		});
+		log(
+			`<:updateevent:1041829464704827392> Event ${oldEvent.name}’s description was changed!`,
+			"voice",
+			{
+				files: [
+					{
+						attachment: Buffer.from(
+							difflib
+								.unifiedDiff(
+									(oldEvent.description || "").split("\n"),
+									(newEvent.description || "").split("\n"),
+								)
+								.join("\n")
+								.replace(/^--- \n{2}\+\+\+ \n{2}@@ .+ @@\n{2}/, ""),
+							"utf-8",
+						),
+						name: "description.diff",
+					},
+				],
+			},
+		);
 
 	if (oldEvent.coverImageURL() !== newEvent.coverImageURL()) {
 		const coverImageURL = newEvent.coverImageURL({ size: 128 });
 		const response = coverImageURL && (await fetch(coverImageURL));
 		await log(
-			`<:updateevent:1041829464704827392> Event ${oldEvent.name}’s cover image was ${response ? `changed` : "removed"}!`,
+			`<:updateevent:1041829464704827392> Event ${oldEvent.name}’s cover image was ${
+				response ? `changed` : "removed"
+			}!`,
 			"voice",
 			{ files: response ? [Buffer.from(await response.arrayBuffer())] : [] },
 		);
