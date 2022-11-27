@@ -9,23 +9,27 @@ const event: Event<"stickerUpdate"> = async function event(oldSticker, newSticke
 
 	const logs = [];
 	if (oldSticker.description !== newSticker.description) {
-		log(`<:updatesticker:1041830193658085416> Sticker ${oldSticker.name}’s description was changed!`, "server", {
-			files: [
-				{
-					attachment: Buffer.from(
-						difflib
-							.unifiedDiff(
-								(oldSticker.description || "").split("\n"),
-								(newSticker.description || "").split("\n"),
-							)
-							.join("\n")
-							.replace(/^--- \n{2}\+\+\+ \n{2}@@ .+ @@\n{2}/, ""),
-						"utf-8",
-					),
-					name: "description.diff",
-				},
-			],
-		});
+		log(
+			`<:updatesticker:1041830193658085416> Sticker ${oldSticker.name}’s description was changed!`,
+			"server",
+			{
+				files: [
+					{
+						attachment: Buffer.from(
+							difflib
+								.unifiedDiff(
+									(oldSticker.description || "").split("\n"),
+									(newSticker.description || "").split("\n"),
+								)
+								.join("\n")
+								.replace(/^--- \n{2}\+\+\+ \n{2}@@ .+ @@\n{2}/, ""),
+							"utf-8",
+						),
+						name: "description.diff",
+					},
+				],
+			},
+		);
 	}
 	if (oldSticker.name !== newSticker.name) {
 		logs.push(` renamed to ${newSticker.name}`);
@@ -37,7 +41,12 @@ const event: Event<"stickerUpdate"> = async function event(oldSticker, newSticke
 	}
 
 	await Promise.all(
-		logs.map((edit) => log(`<:updatesticker:1041830193658085416> Sticker ${oldSticker.name}` + edit + `!`, "server")),
+		logs.map((edit) =>
+			log(
+				`<:updatesticker:1041830193658085416> Sticker ${oldSticker.name}` + edit + `!`,
+				"server",
+			),
+		),
 	);
 };
 export default event;
