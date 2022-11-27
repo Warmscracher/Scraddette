@@ -45,7 +45,12 @@ const event: Event<"roleUpdate"> = async function event(oldRole, newRole) {
 	}
 
 	await Promise.all(
-		logs.map((edit) => log(`<:updaterole:1041830326554599495> Role ${newRole.toString()}` + edit + `!`, "server")),
+		logs.map((edit) =>
+			log(
+				`<:updaterole:1041830326554599495> Role ${newRole.toString()}` + edit + `!`,
+				"server",
+			),
+		),
 	);
 };
 export default event;
