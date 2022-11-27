@@ -99,21 +99,25 @@ const event: Event<"threadUpdate"> = async function event(oldThread, newThread) 
 
 	await Promise.all(
 		logs.map((edit) =>
-			log(`<:updatethread:1041830253724708904> Thread ${newThread.toString()}` + edit + `!`, "channels", {
-				components: [
-					{
-						type: ComponentType.ActionRow,
-						components: [
-							{
-								type: ComponentType.Button,
-								label: "View Thread",
-								style: ButtonStyle.Link,
-								url: newThread.url,
-							},
-						],
-					},
-				],
-			}),
+			log(
+				`<:updatethread:1041830253724708904> Thread ${newThread.toString()}` + edit + `!`,
+				"channels",
+				{
+					components: [
+						{
+							type: ComponentType.ActionRow,
+							components: [
+								{
+									type: ComponentType.Button,
+									label: "View Thread",
+									style: ButtonStyle.Link,
+									url: newThread.url,
+								},
+							],
+						},
+					],
+				},
+			),
 		),
 	);
 	const censored = censor(newThread.name);
