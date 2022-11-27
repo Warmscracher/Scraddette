@@ -11,29 +11,22 @@ import giveXp from "./xp.js";
 export const BOARD_EMOJI = "🍡";
 /** @param {import("discord.js").TextBasedChannel} [channel] */
 export function boardReactionCount(channel) {
-	const COUNTS = { scradd: 2, devs: 2, modsPlus: 2, mods: 2, admins: 2, default: 3, info: 4 };
-	if (process.env.NODE_ENV !== "production") return COUNTS.scradd;
+	const COUNTS = { misc: 2, default: 3, info: 4 };
+	if (process.env.NODE_ENV !== "production") return COUNTS.misc;
 	if (!channel) return COUNTS.default;
 	const baseChannel = getBaseChannel(channel);
-	if (!baseChannel || baseChannel.isDMBased()) return COUNTS.mods;
+	if (!baseChannel || baseChannel.isDMBased()) return COUNTS.misc;
 
 	return (
 		{
-			[CONSTANTS.channels.mod?.id || ""]: COUNTS.mods,
-			[CONSTANTS.channels.modlogs?.id || ""]: COUNTS.mods + 1,
-			[CONSTANTS.channels.admin?.id || ""]: COUNTS.admins,
-			[CONSTANTS.channels.modmail?.id || ""]: COUNTS.mods,
-			"853256939089559583": COUNTS.modsPlus, // #da-boosters
-			"869662117651955802": COUNTS.devs, // #devs-only
+			[CONSTANTS.channels.mod?.id || ""]: COUNTS.misc,
+			[CONSTANTS.channels.modlogs?.id || ""]: COUNTS.misc,
+			[CONSTANTS.channels.exec?.id || ""]: COUNTS.misc,
+			[CONSTANTS.channels.admin?.id || ""]: COUNTS.misc,
+			[CONSTANTS.channels.modmail?.id || ""]: COUNTS.misc,
 			[CONSTANTS.channels.old_suggestions?.id || ""]: COUNTS.default,
 		}[baseChannel.id] ||
-		COUNTS[
-			baseChannel.parent?.id === "866028754962612294" // 💀 The Cache!
-				? "modsPlus"
-				: baseChannel.parent?.id === CONSTANTS.channels.info?.id
-				? "info"
-				: "default"
-		]
+		COUNTS[baseChannel.parent?.id === CONSTANTS.channels.info?.id ? "info" : "default"]
 	);
 }
 
