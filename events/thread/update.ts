@@ -100,7 +100,7 @@ const event: Event<"threadUpdate"> = async function event(oldThread, newThread) 
 	await Promise.all(
 		logs.map((edit) =>
 			log(
-				`<:updatethread:1041830253724708904> Thread ${newThread.toString()}` + edit + `!`,
+				`<:updatethread:1041830253724708904> Thread #${newThread.name}` + edit + `!`,
 				"channels",
 				{
 					components: [
