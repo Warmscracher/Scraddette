@@ -26,7 +26,9 @@ const event: Event<"guildMemberAdd"> = async function event(member) {
 		`<:join:1041828456578682961> Is it a bird? Is it a plane? No, it’s ${member.toString()}, our ${nth(
 			CONSTANTS.guild.memberCount,
 		)} member!`,
-		`<:join:1041828456578682961> Welcome:tm: ${member.toString()}! You’re our ${nth(CONSTANTS.guild.memberCount)} member!`,
+		`<:join:1041828456578682961> Welcome:tm: ${member.toString()}! You’re our ${nth(
+			CONSTANTS.guild.memberCount,
+		)} member!`,
 	];
 
 	await CONSTANTS.channels.welcome?.send(
