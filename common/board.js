@@ -16,6 +16,8 @@ export function boardReactionCount(channel) {
 	if (!channel) return COUNTS.default;
 	const baseChannel = getBaseChannel(channel);
 	if (!baseChannel || baseChannel.isDMBased()) return COUNTS.misc;
+	if (baseChannel.isVoiceBased()) return COUNTS.misc;
+	if (baseChannel.parent?.id === CONSTANTS.channels.info?.id) return COUNTS.info;
 
 	return (
 		{
@@ -25,8 +27,7 @@ export function boardReactionCount(channel) {
 			[CONSTANTS.channels.admin?.id || ""]: COUNTS.misc,
 			[CONSTANTS.channels.modmail?.id || ""]: COUNTS.misc,
 			[CONSTANTS.channels.old_suggestions?.id || ""]: COUNTS.default,
-		}[baseChannel.id] ||
-		COUNTS[baseChannel.parent?.id === CONSTANTS.channels.info?.id ? "info" : "default"]
+		}[baseChannel.id] || COUNTS.default
 	);
 }
 
