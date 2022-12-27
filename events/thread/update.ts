@@ -85,6 +85,7 @@ const event: Event<"threadUpdate"> = async function event(oldThread, newThread) 
 								url: newThread.url,
 							},
 						],
+
 						type: ComponentType.ActionRow,
 					},
 				],
@@ -108,16 +109,17 @@ const event: Event<"threadUpdate"> = async function event(oldThread, newThread) 
 					{
 						components: [
 							{
-									components: [
+								components: [
 									{
 										label: "View Thread",
-									type: ComponentType.Button,
-											style: ButtonStyle.Link,
+										type: ComponentType.Button,
+										style: ButtonStyle.Link,
 										url: newThread.url,
 									},
 								],
+
 								type: ComponentType.ActionRow,
-						},
+							},
 						],
 					},
 				),
