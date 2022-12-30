@@ -8,7 +8,7 @@ import log from "../../../common/logging.js";
 import type Event from "../../../common/types/event";
 
 const event: Event<"guildScheduledEventUpdate"> = async function event(oldEvent, newEvent) {
-	const guild = newEvent.guild || (await client.guilds.fetch(newEvent.guildId));
+	const guild = newEvent.guild ?? (await client.guilds.fetch(newEvent.guildId));
 	if (guild.id !== CONSTANTS.guild.id || !oldEvent) return;
 	const logs = [];
 	if (oldEvent.name !== newEvent.name) logs.push(`’s topic changed to \`${newEvent.name}\``);
@@ -19,15 +19,15 @@ const event: Event<"guildScheduledEventUpdate"> = async function event(oldEvent,
 	) {
 		logs.push(
 			` moved to ${
-				oldEvent.channel?.toString() ||
-				oldEvent.entityMetadata?.location ||
+				oldEvent.channel?.toString() ??
+				oldEvent.entityMetadata?.location ??
 				"an external location"
 			}`,
 		);
 	}
 
 	if (oldEvent.description !== newEvent.description) {
-		log(
+		await log(
 			`<:updateevent:1041829464704827392> Event ${oldEvent.name}’s description was changed!`,
 			"voice",
 			{
@@ -36,8 +36,8 @@ const event: Event<"guildScheduledEventUpdate"> = async function event(oldEvent,
 						attachment: Buffer.from(
 							difflib
 								.unifiedDiff(
-									(oldEvent.description || "").split("\n"),
-									(newEvent.description || "").split("\n"),
+									(oldEvent.description ?? "").split("\n"),
+									(newEvent.description ?? "").split("\n"),
 								)
 								.join("\n")
 								.replace(/^--- \n{2}\+\+\+ \n{2}@@ .+ @@\n{2}/, ""),
@@ -67,12 +67,12 @@ const event: Event<"guildScheduledEventUpdate"> = async function event(oldEvent,
 		oldEvent.scheduledStartAt?.valueOf() !== newEvent.scheduledStartAt?.valueOf() ||
 		oldEvent.scheduledEndAt?.valueOf() !== newEvent.scheduledEndAt?.valueOf()
 	) {
-		const start = newEvent.scheduledStartAt,
-			end = newEvent.scheduledEndAt;
+		const start = newEvent.scheduledStartAt;
+		const end = newEvent.scheduledEndAt;
 		logs.push(
 			` rescheduled${
-				start || end
-					? ` to ${time(start || end || new Date())}${
+				start ?? end
+					? ` to ${time(start ?? end ?? new Date())}${
 							end && start ? `-${time(end)}` : ""
 					  }`
 					: ""
