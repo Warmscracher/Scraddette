@@ -89,7 +89,7 @@ client.user.setPresence({
 		{
 			name: process.env.NODE_ENV === "production" ? "Yandes Attic!" : "for bugs…",
 			type: ActivityType.Watching,
-			url: pkg.homepage,
+			url: "https://discord.gg/FPv957V6SD",
 		},
 	],
 });
