@@ -1,17 +1,16 @@
 import { suggestionsDatabase } from "../../../commands/get-top-suggestions.js";
 import { BOARD_EMOJI, updateBoard } from "../../../common/board.js";
 import CONSTANTS from "../../../common/CONSTANTS.js";
+
 import type Event from "../../../common/types/event";
 
-const event: Event<"messageReactionRemove"> = async function event(reaction, user) {
-	if (reaction.partial) reaction = await reaction.fetch();
+const event: Event<"messageReactionRemove"> = async function event(partialReaction) {
+	const reaction = partialReaction.partial ? await partialReaction.fetch() : partialReaction;
 
 	const message = reaction.message.partial ? await reaction.message.fetch() : reaction.message;
 
 	// Ignore other servers
 	if (!message.inGuild() || message.guild.id !== CONSTANTS.guild.id) return;
-
-	if (user.partial) user = await user.fetch();
 
 	const defaultEmoji = CONSTANTS.channels.suggestions?.defaultReactionEmoji;
 	if (
@@ -21,9 +20,7 @@ const event: Event<"messageReactionRemove"> = async function event(reaction, use
 		(await message.channel.fetchStarterMessage())?.id === message.id
 	) {
 		suggestionsDatabase.data = suggestionsDatabase.data.map((suggestion) =>
-			suggestion.id === message.id
-				? { ...suggestion, count: reaction.count || 0 }
-				: suggestion,
+			suggestion.id === message.id ? { ...suggestion, count: reaction.count } : suggestion,
 		);
 	}
 

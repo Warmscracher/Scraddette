@@ -5,10 +5,12 @@
 		"baseUrl": ".",
 		"checkJs": true,
 		"esModuleInterop": true,
+		"exactOptionalPropertyTypes": false,
 		"experimentalDecorators": true,
 		"forceConsistentCasingInFileNames": true,
+		"importHelpers": true,
 		"importsNotUsedAsValues": "error",
-		"lib": ["dom", "ES2022"],
+		"lib": ["ESNext", "DOM"],
 		"maxNodeModuleJsDepth": 0,
 		"module": "ESNext",
 		"moduleResolution": "Node",
@@ -20,18 +22,16 @@
 		"noUncheckedIndexedAccess": true,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
+		"outDir": "dist",
+		"resolveJsonModule": true,
+		"skipLibCheck": false,
 		"strict": true,
 		"stripInternal": true,
 		"target": "ES2021",
 		"useDefineForClassFields": true,
-		"useUnknownInCatchVariables": true,
-		"importHelpers": true,
-		"outDir": "dist",
-		"skipLibCheck": false,
-		"resolveJsonModule": true,
-		"exactOptionalPropertyTypes": false
+		"useUnknownInCatchVariables": true
 	},
 	"exclude": ["node_modules", ".git", "dist"],
-	"include": ["./*", "./.*", "./**/*", "./.**/*"],
+	"include": ["./*", "./.*", "./**/*", "./.**/*"], // TODO: idt we need this
 	"typeAcquisition": { "enable": true }
 }

@@ -1,8 +1,9 @@
 import CONSTANTS from "../../../common/CONSTANTS.js";
+import Database from "../../../common/database.js";
 import log from "../../../common/logging.js";
 import { closeModmail, getThreadFromMember } from "../../../common/modmail.js";
+
 import type Event from "../../../common/types/event";
-import Database from "../../../common/database.js";
 
 export const rolesDatabase = new Database("roles");
 await rolesDatabase.init();
@@ -23,7 +24,7 @@ const event: Event<"guildMemberAdd"> = async function event(member) {
 		? [
 				`Oof… **${member.user.username}** got banned…`,
 				`There’s no turning back for **${member.user.username}**…`,
-				`I don't think this was the best place for **${member.user.username}**…`,
+				`I don’t think this was the best place for **${member.user.username}**…`,
 				`Oop, **${member.user.username}** angered the mods!`,
 				`**${member.user.username}** broke the rules and took an 🇱`,
 				`**${member.user.username}** talked about opacity slider too much.`,
@@ -39,36 +40,36 @@ const event: Event<"guildMemberAdd"> = async function event(member) {
 
 	const promises = [
 		CONSTANTS.channels.welcome?.send(
-			CONSTANTS.emojis.misc[banned ? "ban" : "leave"] +
-				" " +
-				byes[Math.floor(Math.random() * byes.length)],
+			`${CONSTANTS.emojis.misc[banned ? "ban" : "leave"]} ${
+				byes[Math.floor(Math.random() * byes.length)]
+			}`,
 		),
 		getThreadFromMember(member).then(async (thread) => {
-			if (thread) closeModmail(thread, member.user, "Member left");
+			if (thread) await closeModmail(thread, member.user, "Member left");
 		}),
 	];
 
 	await Promise.all(promises);
-	const allRoles = rolesDatabase.data;
-	const databaseIndex = allRoles.findIndex((entry) => entry.user === member.id);
+	// const allRoles = [...(rolesDatabase.data)];
+	// const databaseIndex = allRoles.findIndex((entry) => entry.user === member.id);
 
-	const memberRoles = Object.fromEntries(
-		member.roles
-			.valueOf()
-			.filter(
-				(role) =>
-					role.editable &&
-					role.id !== CONSTANTS.guild.id &&
-					![CONSTANTS.roles.active?.id, CONSTANTS.roles.weekly_winner?.id].includes(
-						role.id,
-					),
-			)
-			.map((role) => [role.id, true] as const),
-	);
+	// const memberRoles = Object.fromEntries(
+	// 	member.roles
+	// 		.valueOf()
+	// 		.filter(
+	// 			(role) =>
+	// 				role.editable &&
+	// 				role.id !== CONSTANTS.guild.id &&
+	// 				![CONSTANTS.roles.active?.id, CONSTANTS.roles.weekly_winner?.id].includes(
+	// 					role.id,
+	// 				),
+	// 		)
+	// 		.map((role) => [role.id, true] as const),
+	// );
 
-	if (databaseIndex === -1) allRoles.push(Object.assign({ user: member.id }, memberRoles));
-	else allRoles[databaseIndex] = Object.assign({}, allRoles[databaseIndex], memberRoles);
+	// if (databaseIndex === -1) allRoles.push({ user: member.id, ...memberRoles });
+	// else allRoles[databaseIndex] = { ...allRoles[databaseIndex], ...memberRoles, user: member.id };
 
-	rolesDatabase.data = allRoles;
+	// rolesDatabase.data = allRoles;
 };
 export default event;

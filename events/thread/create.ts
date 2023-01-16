@@ -1,8 +1,9 @@
-import warn from "../../common/warns.js";
-import { badWordsAllowed, censor } from "../../common/automod.js";
-import { suggestionAnswers, suggestionsDatabase } from "../../commands/get-top-suggestions.js";
 import client from "../../client.js";
+import { suggestionAnswers, suggestionsDatabase } from "../../commands/get-top-suggestions.js";
+import censor, { badWordsAllowed } from "../../common/language.js";
 import CONSTANTS from "../../common/CONSTANTS.js";
+import warn from "../../common/punishments.js";
+
 import type Event from "../../common/types/event";
 
 const event: Event<"threadCreate"> = async function event(thread, newlyCreated) {
@@ -13,7 +14,7 @@ const event: Event<"threadCreate"> = async function event(thread, newlyCreated) 
 			...suggestionsDatabase.data,
 			{
 				answer: suggestionAnswers[0],
-				author: thread.ownerId || client.user.id,
+				author: thread.ownerId ?? client.user.id,
 				count: 0,
 				id: thread.id,
 				title: thread.name,
@@ -28,14 +29,15 @@ const event: Event<"threadCreate"> = async function event(thread, newlyCreated) 
 
 		const owner = await thread.fetchOwner();
 		if (owner) {
-			await thread.send(owner.toString() + ", language!");
-			if (owner.guildMember)
+			await thread.send(`${owner.toString()}, language!`);
+			if (owner.guildMember) {
 				await warn(
 					owner.guildMember,
-					`Watch your language!`,
+					"Watch your language!",
 					censored.strikes,
-					"Made thread titled:\n" + thread.name,
+					`Made thread titled:\n${thread.name}`,
 				);
+			}
 		}
 	}
 };

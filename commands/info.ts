@@ -1,21 +1,22 @@
-import { time, Snowflake, Role } from "discord.js";
+import { time, type Snowflake, type Role, TimestampStyles, ChannelType } from "discord.js";
 
+import client from "../client.js";
+import CONSTANTS from "../common/CONSTANTS.js";
+import { defineCommand } from "../common/types/command.js";
+import pkg from "../package.json" assert { type: "json" };
 import { escapeMessage } from "../util/markdown.js";
 import { joinWithAnd } from "../util/text.js";
-import CONSTANTS from "../common/CONSTANTS.js";
-import pkg from "../package.json" assert { type: "json" };
-import { defineCommand } from "../common/types/command.js";
-import client from "../client.js";
 import { userSettingsDatabase } from "./settings.js";
 
 /**
  * Get all users with a role.
  *
  * @param roleId - Role to fetch.
+ * @param useMentions - Whether to use mentions or usernames.
  *
  * @returns Users with the role.
  */
-async function getRole(roleId: Snowflake, useMentions: boolean = false): Promise<string> {
+async function getRole(roleId: Snowflake, useMentions = false): Promise<string> {
 	const role = await CONSTANTS.testingServer?.roles.fetch(roleId);
 	const members = role?.members.toJSON() ?? [];
 
@@ -25,10 +26,11 @@ async function getRole(roleId: Snowflake, useMentions: boolean = false): Promise
 const command = defineCommand({
 	data: {
 		description: "Learn about me",
+
 		subcommands: {
-			credits: { description: "Show bot status" },
+			status: { description: "Show bot status" },
+			credits: { description: "Show credit information" },
 			config: { description: "Show configuration settings" },
-			status: { description: "Show credit information" },
 		},
 	},
 
@@ -43,37 +45,44 @@ const command = defineCommand({
 					embeds: [
 						{
 							title: "Status",
-							description: `I'm open-source! The source code is available [on GitHub](${pkg.repository.url}).`,
+							description: `I’m open-source! The source code is available [on GitHub](https://github.com/scratchaddons-community/scradd).`,
+
 							fields: [
 								{
 									name: "Mode",
+
 									value:
 										process.env.NODE_ENV === "production"
 											? "Production"
 											: "Testing",
+
 									inline: true,
 								},
 								{ name: "Version", value: `v${pkg.version}`, inline: true },
 								{
 									name: "Last restarted",
-									value: time(client.readyAt ?? new Date(), "R"),
+
+									value: time(client.readyAt, TimestampStyles.RelativeTime),
+
 									inline: true,
 								},
 								{
 									name: "Ping",
-									value:
-										Math.abs(
-											+message.createdAt - +interaction.createdAt,
-										).toLocaleString() + "ms",
+
+									value: `${Math.abs(
+										Number(message.createdAt) - Number(interaction.createdAt),
+									).toLocaleString()}ms`,
+
 									inline: true,
 								},
 								{
 									name: "WebSocket latency",
-									value: client.ws.ping.toLocaleString() + "ms",
+									value: `${client.ws.ping.toLocaleString()}ms`,
 									inline: true,
 								},
 								{ name: "Node version", value: process.version, inline: true },
 							],
+
 							thumbnail: { url: client.user.displayAvatarURL() },
 							color: CONSTANTS.themeColor,
 						},
@@ -86,6 +95,7 @@ const command = defineCommand({
 					embeds: [
 						{
 							title: "Configuration",
+
 							fields: [
 								{
 									name: CONSTANTS.zeroWidthSpace,
@@ -93,21 +103,21 @@ const command = defineCommand({
 									inline: false,
 								},
 
-								...Object.entries(CONSTANTS.channels).map((channel) => {
-									return {
-										name:
-											channel[0]
-												.split("_")
-												.map(
-													(name) =>
-														(name[0] || "").toUpperCase() +
-														name.slice(1),
-												)
-												.join(" ") + " channel",
-										value: channel[1]?.toString() || "*None*",
-										inline: true,
-									};
-								}),
+								...Object.entries(CONSTANTS.channels).map((channel) => ({
+									name: `${channel[0]
+										.split("_")
+										.map(
+											(name) => (name[0] ?? "").toUpperCase() + name.slice(1),
+										)
+										.join(" ")} ${
+										channel[1]?.type === ChannelType.GuildCategory
+											? "category"
+											: "channel"
+									}`,
+
+									value: channel[1]?.toString() ?? "*None*",
+									inline: true,
+								})),
 								{
 									name: CONSTANTS.zeroWidthSpace,
 									value: "**ROLES**",
@@ -118,22 +128,20 @@ const command = defineCommand({
 										(role): role is [string, Role | undefined] =>
 											typeof role[1] !== "string",
 									)
-									.map((role) => {
-										return {
-											name:
-												role[0]
-													.split("_")
-													.map(
-														(name) =>
-															(name[0] || "").toUpperCase() +
-															name.slice(1),
-													)
-													.join(" ") + " role",
-											value: role[1]?.toString() || "*None*",
-											inline: true,
-										};
-									}),
+									.map((role) => ({
+										name: `${role[0]
+											.split("_")
+											.map(
+												(name) =>
+													(name[0] ?? "").toUpperCase() + name.slice(1),
+											)
+											.join(" ")} role`,
+
+										value: role[1]?.toString() ?? "*None*",
+										inline: true,
+									})),
 							],
+
 							color: CONSTANTS.themeColor,
 						},
 					],
@@ -150,6 +158,7 @@ const command = defineCommand({
 						{
 							title: "Credits",
 							description: "Scraddette is hosted on [Railway](https://railway.app/).",
+
 							fields: [
 								{
 									name: "Developers",
@@ -168,17 +177,21 @@ const command = defineCommand({
 								},
 								{
 									name: "Third-party code libraries",
+
 									value: joinWithAnd(
 										Object.entries(pkg.dependencies),
 										([dependency, version]) =>
-											`\`${escapeMessage(dependency + "@" + version)}\``,
+											`\`${escapeMessage(`${dependency}@${version}`)}\``,
 									),
+
 									inline: true,
 								},
 							],
+
 							footer: {
 								text: "None of the above users are in any particular order.",
 							},
+
 							color: CONSTANTS.themeColor,
 						},
 					],

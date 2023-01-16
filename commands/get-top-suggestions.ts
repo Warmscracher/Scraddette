@@ -5,13 +5,14 @@ import {
 	hyperlink,
 	User,
 } from "discord.js";
-import CONSTANTS from "../common/CONSTANTS.js";
-import { escapeLinks } from "../util/markdown.js";
-import { getAllMessages, paginate } from "../util/discord.js";
-import { truncateText } from "../util/text.js";
-import { defineCommand } from "../common/types/command.js";
-import Database from "../common/database.js";
+
 import client from "../client.js";
+import CONSTANTS from "../common/CONSTANTS.js";
+import Database from "../common/database.js";
+import { defineCommand } from "../common/types/command.js";
+import { getAllMessages, paginate } from "../util/discord.js";
+import { escapeLinks } from "../util/markdown.js";
+import { truncateText } from "../util/text.js";
 import { userSettingsDatabase } from "./settings.js";
 
 export const suggestionAnswers = [
@@ -31,7 +32,7 @@ await suggestionsDatabase.init();
 const old = CONSTANTS.channels.old_suggestions
 	? getAllMessages(CONSTANTS.channels.old_suggestions).then((suggestions) =>
 			suggestions.map((message) => {
-				const embed = message.embeds[0];
+				const [embed] = message.embeds;
 
 				const segments = message.thread?.name.split(" | ");
 
@@ -41,28 +42,29 @@ const old = CONSTANTS.channels.old_suggestions
 							[
 								segments?.[0]?.toLowerCase(),
 								segments?.at(-1)?.toLowerCase(),
-							].includes(answer?.toLowerCase()),
-						) || suggestionAnswers[0],
+							].includes(answer.toLowerCase()),
+						) ?? suggestionAnswers[0],
 
 					author:
 						(message.author.id === CONSTANTS.robotop
 							? message.embeds[0]?.footer?.text.split(": ")[1]
 							: /\/(?<userId>\d+)\//.exec(message.embeds[0]?.author?.iconURL ?? "")
-									?.groups?.userId) || message.author,
+									?.groups?.userId) ?? message.author,
 
 					count:
 						(message.reactions.valueOf().first()?.count ?? 0) -
 						(message.reactions.valueOf().at(1)?.count ?? 0),
 
-					url: message.url,
-
 					title: truncateText(
 						embed?.title ??
 							(embed?.description &&
-								cleanContent(embed?.description, message.channel)) ??
-							(embed?.image?.url ? embed?.image?.url : message.content),
+								cleanContent(embed.description, message.channel)) ??
+							embed?.image?.url ??
+							message.content,
 						100,
 					),
+
+					url: message.url,
 				};
 			}),
 	  )
@@ -71,44 +73,49 @@ const old = CONSTANTS.channels.old_suggestions
 const command = defineCommand({
 	data: {
 		description: "Get the top suggestions",
+
 		options: {
-			user: {
-				type: ApplicationCommandOptionType.User,
-				description: "Filter suggestions to only get those by a certain user",
-			},
 			answer: {
-				type: ApplicationCommandOptionType.String,
-				description: "Filter suggestions to only get those with a certain answer",
 				choices: Object.fromEntries(suggestionAnswers.map((answer) => [answer, answer])),
+				description: "Filter suggestions to only get those with a certain answer",
+				type: ApplicationCommandOptionType.String,
+			},
+
+			user: {
+				description: "Filter suggestions to only get those by a certain user",
+				type: ApplicationCommandOptionType.User,
 			},
 		},
 	},
+
 	async interaction(interaction) {
-		const author = interaction.options.getMember("user");
-		const answer = interaction.options.getString("answer");
+		const authorFilter = interaction.options.getMember("user");
+		const answerFilter = interaction.options.getString("answer");
 		const { suggestions } = CONSTANTS.channels;
 		const useMentions =
 			userSettingsDatabase.data.find((settings) => interaction.user.id === settings.user)
 				?.useMentions ?? false;
 
-		const nick = author instanceof GuildMember && author?.displayName;
+		const nick =
+			authorFilter instanceof GuildMember ? authorFilter.displayName : authorFilter?.nick;
 
 		await paginate(
 			[...(await old), ...suggestionsDatabase.data]
 				.filter(
-					(item) =>
+					({ answer, author }) =>
 						!(
-							(answer && item.answer !== answer) ||
-							(author instanceof GuildMember &&
-								(item.author instanceof User ? item.author.id : item.author) !==
-									author.id)
+							(answerFilter && answer !== answerFilter) ||
+							(authorFilter instanceof GuildMember &&
+								(author instanceof User ? author.id : author) !== authorFilter.id)
 						),
 				)
 				.sort((suggestionOne, suggestionTwo) => suggestionTwo.count - suggestionOne.count),
-			async ({ answer, author, count, title, ...id }) => {
-				return `**${count}** ${
-					suggestions?.defaultReactionEmoji?.name ||
-					`<:${suggestions?.defaultReactionEmoji?.name}:${suggestions?.defaultReactionEmoji?.id}>`
+			async ({ answer, author, count, title, ...id }) =>
+				`**${count}** ${
+					"url" in id
+						? "👍"
+						: suggestions?.defaultReactionEmoji?.name ??
+						  `<:${suggestions?.defaultReactionEmoji?.name}:${suggestions?.defaultReactionEmoji?.id}>`
 				} ${hyperlink(
 					escapeLinks(title),
 					"url" in id
@@ -128,14 +135,19 @@ const command = defineCommand({
 													.catch(() => ({ username: `<@${author}>` }))
 									  ).username
 						  }`
-				}`;
+				}`,
+			async (data) => await interaction[interaction.replied ? "editReply" : "reply"](data),
+			{
+				title: `Top suggestions${nick ? ` by ${nick}` : ""}${
+					answerFilter ? `${nick ? " &" : ""} answered with ${answerFilter}` : ""
+				}`,
+
+				user: interaction.user,
+				format: authorFilter instanceof GuildMember ? authorFilter : undefined,
+
+				singular: "suggestion",
+				failMessage: "No suggestions found! Try changing any filters you may have used.",
 			},
-			"No suggestions found. Try changing any filters you may have used.",
-			`Top suggestions${nick ? ` by ${nick}` : ""}${
-				answer ? `${nick ? " &" : ""} answered with ${answer}` : ""
-			}`,
-			(data) => interaction[interaction.replied ? "editReply" : "reply"](data),
-			interaction.user,
 		);
 	},
 });
