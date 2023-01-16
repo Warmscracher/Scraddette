@@ -41,11 +41,12 @@ const event: Event<"stickerUpdate"> = async function event(oldSticker, partialSt
 		logs.push(`’s related emoji ${newSticker.tags ? `set to ${newSticker.tags}` : "removed"}`);
 
 	await Promise.all(
-		logs.map(async (edit) => await
-			log(
-				`<:updatesticker:1041830193658085416> Sticker ${oldSticker.name}${edit}!`,
-				"server",
-			),
+		logs.map(
+			async (edit) =>
+				await log(
+					`<:updatesticker:1041830193658085416> Sticker ${oldSticker.name}${edit}!`,
+					"server",
+				),
 		),
 	);
 };
