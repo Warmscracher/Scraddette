@@ -79,24 +79,28 @@ const event: Event<"channelUpdate"> = async function event(oldChannel, newChanne
 			edits.push(` was made ${newChannel.nsfw ? "" : "non-"}age-restricted`);
 
 		if (oldChannel.topic !== newChannel.topic) {
-			await log(`✏ Channel ${newChannel.toString()}’s topic was changed!`, "channels", {
-				files: [
-					{
-						attachment: Buffer.from(
-							difflib
-								.unifiedDiff(
-									(oldChannel.topic ?? "").split("\n"),
-									(newChannel.topic ?? "").split("\n"),
-								)
-								.join("\n")
-								.replace(/^--- \n{2}\+\+\+ \n{2}@@ .+ @@\n{2}/, ""),
-							"utf8",
-						),
+			await log(
+				`<:updatechannel:1041829394945146921> Channel ${newChannel.toString()}’s topic was changed!`,
+				"channels",
+				{
+					files: [
+						{
+							attachment: Buffer.from(
+								difflib
+									.unifiedDiff(
+										(oldChannel.topic ?? "").split("\n"),
+										(newChannel.topic ?? "").split("\n"),
+									)
+									.join("\n")
+									.replace(/^--- \n{2}\+\+\+ \n{2}@@ .+ @@\n{2}/, ""),
+								"utf8",
+							),
 
-						name: "topic.diff",
-					},
-				],
-			});
+							name: "topic.diff",
+						},
+					],
+				},
+			);
 		}
 
 		if (oldChannel.defaultAutoArchiveDuration !== newChannel.defaultAutoArchiveDuration)
@@ -162,7 +166,11 @@ const event: Event<"channelUpdate"> = async function event(oldChannel, newChanne
 
 	await Promise.all(
 		edits.map(
-			async (edit) => await log(`✏ Channel ${newChannel.toString()}${edit}!`, "channels"),
+			async (edit) =>
+				await log(
+					`<:updatechannel:1041829394945146921> Channel ${newChannel.toString()}${edit}!`,
+					"channels",
+				),
 		),
 	);
 };

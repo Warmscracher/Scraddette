@@ -157,7 +157,7 @@ const command = defineCommand({
 					embeds: [
 						{
 							title: "Credits",
-							description: "Scradd is hosted on [Railway](https://railway.app/).",
+							description: "Scraddette is hosted on [Railway](https://railway.app/).",
 
 							fields: [
 								{

@@ -12,7 +12,7 @@ const event: Event<"threadDelete"> = async function event(thread) {
 		suggestionsDatabase.data = suggestionsDatabase.data.filter(({ id }) => id !== thread.id);
 
 	await log(
-		`🗑 Thread #${thread.name} ${
+		`<:deletethread:1041830230177878136> Thread #${thread.name} ${
 			thread.parent ? `in ${thread.parent.toString()} ` : ""
 		}deleted! (ID: ${thread.id})`,
 		"channels",

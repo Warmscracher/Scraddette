@@ -63,7 +63,7 @@ const event: Event<"threadUpdate"> = async function event(oldThread, newThread) 
 	// TODO // newThread.appliedTags;
 	if (oldThread.flags.has("Pinned") !== newThread.flags.has("Pinned")) {
 		await log(
-			`📌 Post ${
+			`<:pin:1041828756127498313> Post ${
 				newThread.flags.has("Pinned") ? "" : "un"
 			}pinned in ${newThread.parent?.toString()}!`,
 			"messages",
@@ -96,22 +96,26 @@ const event: Event<"threadUpdate"> = async function event(oldThread, newThread) 
 	await Promise.all(
 		logs.map(
 			async (edit) =>
-				await log(`📃 Thread #${newThread.name}${edit}!`, "channels", {
-					components: [
-						{
-							components: [
-								{
-									label: "View Thread",
+				await log(
+				`<:updatethread:1041830253724708904> Thread #${newThread.name}${edit}!`,
+				"channels",
+				{
+						components: [
+							{
+									components: [
+									{
+										label: "View Thread",
 									type: ComponentType.Button,
-									style: ButtonStyle.Link,
-									url: newThread.url,
-								},
-							],
+											style: ButtonStyle.Link,
+										url: newThread.url,
+									},
+								],
 
 							type: ComponentType.ActionRow,
 						},
-					],
-				}),
+						],
+					},
+			),
 		),
 	);
 	const censored = censor(newThread.name);

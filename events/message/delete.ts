@@ -25,7 +25,7 @@ const event: Event<"messageDelete"> = async function event(message) {
 	while (files.length > 9 + Number(!content)) files.pop();
 
 	await log(
-		`🗑 ${message.partial ? "Unknown message" : "Message"}${
+		`<:delete:1041828573826252911> ${message.partial ? "Unknown message" : "Message"}${
 			message.author ? ` by ${message.author.toString()}` : ""
 		} in ${message.channel.toString()} deleted!`,
 		"messages",

@@ -242,7 +242,7 @@ export default async function giveXp(to, url, amount = DEFAULT_XP) {
 			),
 		},
 
-		content: `__**Weekly Winners week of ${
+		content: `__**Weekly Winners**__ ( ${
 			[
 				"January",
 				"February",
@@ -257,7 +257,7 @@ export default async function giveXp(to, url, amount = DEFAULT_XP) {
 				"November",
 				"December",
 			][date.getUTCMonth()] || ""
-		} ${nth(date.getUTCDate(), { bold: false, jokes: false })}**__\n${
+		} ${nth(date.getUTCDate(), { bold: false, jokes: false })})\n${
 			sorted
 				.map(
 					(gain, index) =>

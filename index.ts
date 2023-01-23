@@ -211,5 +211,5 @@ if (process.env.NODE_ENV === "production") {
 await Promise.all(promises);
 if (process.env.NODE_ENV === "production") {
 	const { default: log } = await import("./common/logging.js");
-	await log(`🤖 Bot restarted on version **v${pkg.version}**!`, "server");
+	await log(`ALAN SUCKS\n👎👎👎👎👎👎 ALAN ${pkg.version} TIMES!`, "server");
 }

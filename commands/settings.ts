@@ -95,11 +95,11 @@ const command = defineCommand({
 
 			content:
 				`${CONSTANTS.emojis.statuses.yes} Updated your settings!\n\n` +
-				`Board Pings: ${CONSTANTS.emojis.statuses[boardPings ? "yes" : "no"]}\n` +
-				`Level Up Pings: ${CONSTANTS.emojis.statuses[levelUpPings ? "yes" : "no"]}\n` +
-				`Weekly Winner Pings: ${CONSTANTS.emojis.statuses[weeklyPings ? "yes" : "no"]}\n` +
-				`Autoreactions: ${CONSTANTS.emojis.statuses[autoreactions ? "yes" : "no"]}\n` +
-				`Use Mentions: ${CONSTANTS.emojis.statuses[useMentions ? "yes" : "no"]}`,
+				`Board Pings: ${CONSTANTS.emojis.statuses[boardPings ? "on" : "off"]}\n` +
+				`Level Up Pings: ${CONSTANTS.emojis.statuses[levelUpPings ? "on" : "off"]}\n` +
+				`Weekly Winner Pings: ${CONSTANTS.emojis.statuses[weeklyPings ? "on" : "off"]}\n` +
+				`Autoreactions: ${CONSTANTS.emojis.statuses[autoreactions ? "on" : "off"]}\n` +
+				`Use Mentions: ${CONSTANTS.emojis.statuses[useMentions ? "on" : "off"]}`,
 		});
 	},
 });

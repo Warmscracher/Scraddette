@@ -87,7 +87,7 @@ export default client;
 client.user.setPresence({
 	activities: [
 		{
-			name: process.env.NODE_ENV === "production" ? "the SA server!" : "for bugs…",
+			name: process.env.NODE_ENV === "production" ? "Yandes Attic!" : "for bugs…",
 			type: ActivityType.Watching,
 			url: "https://discord.gg/FPv957V6SD",
 		},

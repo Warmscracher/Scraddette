@@ -10,7 +10,7 @@ import type Event from "../../../common/types/event";
 
 const event: Event<"guildMemberAdd"> = async function event(member) {
 	if (member.guild.id !== CONSTANTS.guild.id) return;
-	await log(`👋 Member ${member.toString()} joined!`, "members");
+	await log(`<:join:1041828456578682961> Member ${member.toString()} joined!`, "members");
 
 	const greetings = [
 		`Everybody please welcome ${member.toString()} to ${

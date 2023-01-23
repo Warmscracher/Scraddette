@@ -10,7 +10,7 @@ await rolesDatabase.init();
 
 const event: Event<"guildMemberAdd"> = async function event(member) {
 	if (member.guild.id !== CONSTANTS.guild.id) return;
-	await log(`💨 Member ${member.toString()} left!`, "members");
+	await log(`<:leave:1041828514929840208> Member ${member.toString()} left!`, "members");
 
 	const banned = await CONSTANTS.guild.bans
 		.fetch(member)

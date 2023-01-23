@@ -9,7 +9,7 @@ const event: Event<"stageInstanceCreate"> = async function event(instance) {
 
 	if (guild.id !== CONSTANTS.guild.id) return;
 	await log(
-		`📸 Stage ${instance.channel?.toString()} went live${
+		`<:startstage:1042401867377938473> Stage ${instance.channel?.toString()} went live${
 			instance.guildScheduledEvent ? `for the ${instance.guildScheduledEvent.name} event` : ""
 		} - ${instance.topic}`,
 		"voice",

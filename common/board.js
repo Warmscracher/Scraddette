@@ -7,7 +7,7 @@ import Database from "./database.js";
 import censor from "./language.js";
 import giveXp from "./xp.js";
 
-export const BOARD_EMOJI = "🥔";
+export const BOARD_EMOJI = "🍡";
 /**
  * Determines the board reaction count for a channel.
  *
@@ -17,23 +17,18 @@ export const BOARD_EMOJI = "🥔";
  */
 export function boardReactionCount(channel) {
 	const COUNTS = {
-		scradd: 2,
-		devs: 6,
-		misc: 5,
-		mods: 4,
-		exec: 3,
-		admins: 2,
-		default: 8,
-		info: 10,
+		misc: 2,
+		default: 3,
+		info: 4,
 	};
 
-	if (process.env.NODE_ENV !== "production") return COUNTS.scradd;
+	if (process.env.NODE_ENV !== "production") return COUNTS.misc;
 
 	if (!channel) return COUNTS.default;
 
 	const baseChannel = getBaseChannel(channel);
 
-	if (!baseChannel || baseChannel.isDMBased()) return COUNTS.mods;
+	if (!baseChannel || baseChannel.isDMBased()) return COUNTS.misc;
 
 	if (baseChannel.isVoiceBased()) return COUNTS.misc;
 
@@ -41,20 +36,12 @@ export function boardReactionCount(channel) {
 
 	return (
 		{
-			[CONSTANTS.channels.mod?.id || ""]: COUNTS.mods,
+			[CONSTANTS.channels.mod?.id || ""]: COUNTS.misc,
 			[CONSTANTS.channels.modlogs?.id || ""]: COUNTS.misc,
-			[CONSTANTS.channels.exec?.id || ""]: COUNTS.exec,
-			[CONSTANTS.channels.admin?.id || ""]: COUNTS.admins,
-			"1064409498757910528": COUNTS.misc, // #contact-mods
-			"853256939089559583": COUNTS.misc, // #da-boosters
-			"869662117651955802": COUNTS.devs, // #devs-only
+			[CONSTANTS.channels.exec?.id || ""]: COUNTS.misc,
+			[CONSTANTS.channels.admin?.id || ""]: COUNTS.misc,
 			[CONSTANTS.channels.old_suggestions?.id || ""]: COUNTS.default,
-		}[baseChannel.id] ||
-		COUNTS[
-			baseChannel.parent?.id === "866028754962612294" // The Cache
-				? "misc"
-				: "default"
-		]
+		}[baseChannel.id] || COUNTS.default
 	);
 }
 

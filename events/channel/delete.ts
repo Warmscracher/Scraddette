@@ -8,7 +8,7 @@ import type Event from "../../common/types/event";
 const event: Event<"channelDelete"> = async function event(channel) {
 	if (channel.isDMBased() || channel.guild.id !== CONSTANTS.guild.id) return;
 	await log(
-		`🗑 ${
+		`<:deletechannel:1041829372044267611> ${
 			{
 				[ChannelType.GuildText]: "Text",
 				[ChannelType.GuildVoice]: "Voice",
