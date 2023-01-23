@@ -1,9 +1,7 @@
 import { AssertionError } from "assert";
-
 import { ActivityType, Client, GatewayIntentBits, Partials } from "discord.js";
-
-import pkg from "./package.json" assert { type: "json" };
 import { sanitizePath } from "./util/files.js";
+import pkg from "./package.json" assert { type: "json" };
 
 const Handler = new Client({
 	allowedMentions: { parse: ["users"], repliedUser: true },
@@ -37,11 +35,12 @@ const Handler = new Client({
 		Partials.GuildScheduledEvent,
 		Partials.ThreadMember,
 	],
-
 	ws: { large_threshold: 0 },
 });
 
-const readyPromise = new Promise<Client<true>>((resolve) => Handler.once("ready", resolve));
+const readyPromise: Promise<Client<true>> = new Promise((resolve) =>
+	Handler.once("ready", resolve),
+);
 
 Handler.on("debug", (message) => {
 	if (
@@ -54,11 +53,11 @@ Handler.on("debug", (message) => {
 		throw error;
 	})
 	.on("warn", process.emitWarning)
-	.rest.on("invalidRequestWarning", (data) => {
+	.rest.on("invalidRequestWarning", (data) =>
 		process.emitWarning(
 			`invalidRequestWarning: ${data.count} requests; ${data.remainingTime}ms left`,
-		);
-	})
+		),
+	)
 	.on("restDebug", (message) => {
 		if (
 			process.env.NODE_ENV !== "production" ||
@@ -75,7 +74,7 @@ console.log(`Connected to Discord with tag ${client.user.tag ?? ""} on version $
 
 if (client.user.tag === "Scradd#5905" && !process.argv.includes("--production")) {
 	throw new AssertionError({
-		actual: process.argv.map((argument) => sanitizePath(argument)),
+		actual: process.argv.map((arg) => sanitizePath(arg)),
 		expected: "--production",
 		operator: ".includes",
 		message: "Refusing to run on prod without --production flag",
@@ -89,7 +88,7 @@ client.user.setPresence({
 		{
 			name: process.env.NODE_ENV === "production" ? "Yandes Attic!" : "for bugs…",
 			type: ActivityType.Watching,
-			url: "https://discord.gg/FPv957V6SD",
+			url: pkg.homepage,
 		},
 	],
 });

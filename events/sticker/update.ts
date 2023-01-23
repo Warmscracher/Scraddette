@@ -1,18 +1,15 @@
 import difflib from "difflib";
-
 import CONSTANTS from "../../common/CONSTANTS.js";
 import log from "../../common/logging.js";
-
 import type Event from "../../common/types/event";
 
-const event: Event<"stickerUpdate"> = async function event(oldSticker, partialSticker) {
-	const newSticker = partialSticker.partial ? await partialSticker.fetch() : partialSticker;
-
+const event: Event<"stickerUpdate"> = async function event(oldSticker, newSticker) {
+	if (newSticker.partial) newSticker = await newSticker.fetch();
 	if (!newSticker.guild || newSticker.guild.id !== CONSTANTS.guild.id) return;
 
 	const logs = [];
 	if (oldSticker.description !== newSticker.description) {
-		await log(
+		log(
 			`<:updatesticker:1041830193658085416> Sticker ${oldSticker.name}’s description was changed!`,
 			"server",
 			{
@@ -21,32 +18,34 @@ const event: Event<"stickerUpdate"> = async function event(oldSticker, partialSt
 						attachment: Buffer.from(
 							difflib
 								.unifiedDiff(
-									(oldSticker.description ?? "").split("\n"),
-									(newSticker.description ?? "").split("\n"),
+									(oldSticker.description || "").split("\n"),
+									(newSticker.description || "").split("\n"),
 								)
 								.join("\n")
 								.replace(/^--- \n{2}\+\+\+ \n{2}@@ .+ @@\n{2}/, ""),
-							"utf8",
+							"utf-8",
 						),
-
 						name: "description.diff",
 					},
 				],
 			},
 		);
 	}
-	if (oldSticker.name !== newSticker.name) logs.push(` renamed to ${newSticker.name}`);
-
-	if (oldSticker.tags !== newSticker.tags)
-		logs.push(`’s related emoji ${newSticker.tags ? `set to ${newSticker.tags}` : "removed"}`);
+	if (oldSticker.name !== newSticker.name) {
+		logs.push(` renamed to ${newSticker.name}`);
+	}
+	if (oldSticker.tags !== newSticker.tags) {
+		logs.push(
+			`’s related emoji ` + (newSticker.tags ? `set to ${newSticker.tags}` : "removed"),
+		);
+	}
 
 	await Promise.all(
-		logs.map(
-			async (edit) =>
-				await log(
-					`<:updatesticker:1041830193658085416> Sticker ${oldSticker.name}${edit}!`,
-					"server",
-				),
+		logs.map((edit) =>
+			log(
+				`<:updatesticker:1041830193658085416> Sticker ${oldSticker.name}` + edit + `!`,
+				"server",
+			),
 		),
 	);
 };

@@ -1,11 +1,5 @@
 name: Lint
-on:
-    push:
-    workflow_dispatch:
-    schedule:
-        - cron: "30 12 * * *" # 30 minutes before Dependabot
-
-permissions: write-all
+on: [push, pull_request_target, workflow_dispatch]
 
 jobs:
     bump:
@@ -14,15 +8,15 @@ jobs:
 
         steps:
             - name: Checkout
-              uses: actions/checkout@v3.2.0
+              uses: actions/checkout@v3.1.0
               with:
                   ref: ${{ github.head_ref }}
 
-            - name: Bump dependencies
-              uses: RedGuy12/sync-types@v1.1.1
+            - name: Bump dependnencies
+              uses: RedGuy12/sync-types@v1.0.3
 
             - name: Commit
-              uses: stefanzweifel/git-auto-commit-action@v4.16.0
+              uses: stefanzweifel/git-auto-commit-action@v4.15.4
               with:
                   commit_message: Bump dependencies
                   branch: ${{ github.head_ref }}
@@ -35,7 +29,7 @@ jobs:
 
         steps:
             - name: Checkout
-              uses: actions/checkout@v3.2.0
+              uses: actions/checkout@v3.1.0
               with:
                   ref: ${{ github.head_ref }}
 
@@ -52,7 +46,7 @@ jobs:
               run: npm run format
 
             - name: Commit
-              uses: stefanzweifel/git-auto-commit-action@v4.16.0
+              uses: stefanzweifel/git-auto-commit-action@v4.15.4
               with:
                   commit_message: Format
                   branch: ${{ github.head_ref }}
@@ -65,7 +59,7 @@ jobs:
 
         steps:
             - name: Checkout
-              uses: actions/checkout@v3.2.0
+              uses: actions/checkout@v3.1.0
               with:
                   ref: ${{ github.head_ref }}
 

@@ -1,6 +1,9 @@
-.*
-!.github/
+!**
+**/.DS_Store
+.git/
+.eslintcache
+.env
+.env.*
 dist/
 node_modules/
-!.eslintrc.cjs
-!.gitignore
+.vscode/

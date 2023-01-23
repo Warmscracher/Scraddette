@@ -1,5 +1,4 @@
 import { Collection, ButtonStyle, ComponentType } from "discord.js";
-
 import CONSTANTS from "./CONSTANTS.js";
 
 /** @type {Collection<import("discord.js").Snowflake, string>} */
@@ -25,7 +24,6 @@ export async function checkIfUserPlaying(interaction) {
 		components: [
 			{
 				type: ComponentType.ActionRow,
-
 				components: [
 					{
 						label: "Go to game",

@@ -1,6 +1,5 @@
 import CONSTANTS from "../common/CONSTANTS.js";
 import log from "../common/logging.js";
-
 import type Event from "../common/types/event";
 
 const event: Event<"webhookUpdate"> = async function event(channel) {

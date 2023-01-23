@@ -1,133 +1,40 @@
-import exitHook from "async-exit-hook";
-import { type Message, RESTJSONErrorCodes, type Snowflake } from "discord.js";
+import type { Message, Snowflake } from "discord.js";
 import papaparse from "papaparse";
-
-import client from "../client.js";
-import { extractMessageExtremities } from "../util/discord.js";
-import logError from "../util/logError.js";
+import exitHook from "async-exit-hook";
 import { getLoggingThread } from "./logging.js";
-
+import client from "../client.js";
 import type { suggestionAnswers } from "../commands/get-top-suggestions.js";
-import type { ImmutableArray } from "./types/util.js";
 
 export const DATABASE_THREAD = "databases";
 
 const thread = await getLoggingThread(DATABASE_THREAD);
 
-const databases: { [key: string]: Message<true> | undefined } = {};
+const databases: Record<string, undefined | Message<true>> = {};
 
 for (const message of (await thread.messages.fetch({ limit: 100 })).toJSON()) {
 	const name = message.content.split(" ")[1]?.toLowerCase();
-	if (name) {
-		databases[name] =
-			message.author.id === client.user?.id
-				? message
-				: await thread.send({
-						...(await extractMessageExtremities(message)),
-						content: message.content,
-				  });
+	if (name && message.author.id === client.user?.id) {
+		databases[name] = message;
 	}
 }
 
-let timeouts: {
-	[key: Snowflake]:
-		| { callback: () => Promise<Message<true>>; timeout: NodeJS.Timeout }
-		| undefined;
-} = {};
+let timeouts: Record<
+	Snowflake,
+	{ callback: () => Promise<Message<true>>; timeout: NodeJS.Timeout } | undefined
+> = {};
 
 const contructed: (keyof Databases)[] = [];
 
 export default class Database<Name extends keyof Databases> {
 	message: Message<true> | undefined;
-
-	#data: ImmutableArray<Databases[Name]> | undefined;
-
+	#data: Databases[Name][] | undefined;
 	#extra: string | undefined;
-
 	constructor(public name: Name) {
-		if (contructed.includes(name)) {
+		if (contructed.includes(name))
 			throw new RangeError(
 				`Cannot create a 2nd database for ${name}, they will have conflicting data`,
 			);
-		}
 		contructed.push(name);
-	}
-
-	get data() {
-		if (!this.#data) throw new ReferenceError("Must call `.init()` before reading `.data`");
-		return this.#data;
-	}
-
-	get extra() {
-		if (!this.#data) throw new ReferenceError("Must call `.init()` before reading `.extra`");
-		return this.#extra;
-	}
-
-	#queueWrite() {
-		if (!this.message) {
-			throw new ReferenceError(
-				"Must call `.init()` before reading or setting `.data` or `.extra`",
-			);
-		}
-
-		const timeoutId = timeouts[this.message.id];
-
-		const callback = async (): Promise<Message<true>> => {
-			if (!this.message) {
-				throw new ReferenceError(
-					"Must call `.init()` before reading or setting `.data` or `.extra`",
-				);
-			}
-
-			const data =
-				Boolean(this.#data?.length) &&
-				papaparse.unparse(Array.from(this.#data || [])).trim();
-
-			const files = data
-				? [{ attachment: Buffer.from(data, "utf8"), name: `${this.name}.scradddb` }]
-				: [];
-			const messageContent = this.message.content.split("\n");
-			messageContent[3] = "";
-			if (this.#extra) {
-				messageContent[4] = "Extra misc info:";
-				messageContent[5] = this.#extra;
-			} else {
-				messageContent[4] = "";
-				messageContent[5] = "";
-			}
-
-			const promise = this.message
-				.edit({ content: messageContent.join("\n").trim(), files })
-				.catch(async (error) => {
-					await logError(error, `Database<${this.name}>#queueWrite()`);
-					if (error.code === RESTJSONErrorCodes.UnknownMessage) {
-						databases[this.name] = undefined;
-						await this.init();
-					}
-					return await callback();
-				})
-				.then(async (edited) => {
-					const attachment = edited.attachments.first()?.url;
-
-					const written = attachment
-						? (await fetch(attachment).then(async (res) => await res.text())).trim()
-						: false;
-
-					if (written !== data) {
-						throw new Error("Data changed through write!", {
-							cause: { written, data },
-						});
-					}
-
-					return edited;
-				});
-
-			timeouts[this.message.id] = undefined;
-			return await promise;
-		};
-
-		timeouts[this.message.id] = { timeout: setTimeout(callback, 15_000), callback };
-		timeoutId && clearTimeout(timeoutId.timeout);
 	}
 
 	async init() {
@@ -138,11 +45,11 @@ export default class Database<Name extends keyof Databases> {
 			)} information may be reset.*`,
 		);
 
-		const attachment = this.message.attachments.first()?.url;
+		const attachment = this.message?.attachments.first()?.url;
 
 		this.#data = attachment
 			? await fetch(attachment)
-					.then(async (res) => await res.text())
+					.then((res) => res.text())
 					.then(
 						(csv) =>
 							papaparse.parse<Databases[Name]>(csv.trim(), {
@@ -156,16 +63,73 @@ export default class Database<Name extends keyof Databases> {
 		this.#extra = this.message.content.split("\n")[5];
 	}
 
+	get data() {
+		if (!this.#data) throw new ReferenceError("Must call `.init()` before reading `.data`");
+		return this.#data;
+	}
+
 	set data(content) {
 		if (!this.message) throw new ReferenceError("Must call `.init()` before setting `.data`");
 		this.#data = content;
 		this.#queueWrite();
 	}
 
+	get extra() {
+		if (!this.#data) throw new ReferenceError("Must call `.init()` before reading `.extra`");
+		return this.#extra;
+	}
 	set extra(content) {
 		if (!this.message) throw new ReferenceError("Must call `.init()` before setting `.extra`");
 		this.#extra = content;
 		this.#queueWrite();
+	}
+
+	#queueWrite() {
+		if (!this.message)
+			throw new ReferenceError(
+				"Must call `.init()` before reading or setting `.data` or `.extra`",
+			);
+
+		const timeoutId = timeouts[this.message.id];
+
+		const callback = (): Promise<Message<true>> => {
+			if (!this.message)
+				throw new ReferenceError(
+					"Must call `.init()` before reading or setting `.data` or `.extra`",
+				);
+
+			const files = this.#data?.length
+				? [
+						{
+							attachment: Buffer.from(papaparse.unparse(this.#data), "utf-8"),
+							name: this.name + ".scradddb",
+						},
+				  ]
+				: [];
+			const messageContent = this.message.content.split("\n");
+			messageContent[3] = "";
+			if (this.#extra) {
+				messageContent[4] = "Extra misc info:";
+				messageContent[5] = this.#extra;
+			} else {
+				messageContent[4] = "";
+				messageContent[5] = "";
+			}
+
+			const promise = this.message
+				.edit({ content: messageContent.join("\n").trim(), files })
+				.catch(async () => {
+					databases[this.name] = undefined;
+					await this.init();
+					return callback();
+				});
+
+			timeouts[this.message.id] = undefined;
+			return promise;
+		};
+
+		timeouts[this.message.id] = { timeout: setTimeout(callback, 15_000), callback };
+		timeoutId && clearTimeout(timeoutId.timeout);
 	}
 }
 
@@ -176,9 +140,7 @@ export async function cleanDatabaseListeners() {
 	console.log("Listeners cleaned");
 }
 
-exitHook(async (callback) => {
-	await cleanDatabaseListeners().then(callback);
-});
+exitHook((callback) => cleanDatabaseListeners().then(callback));
 
 export type Databases = {
 	board: {
@@ -189,18 +151,23 @@ export type Databases = {
 		/** The ID of the channel this message is in. */
 		channel: Snowflake;
 		/** The ID of the message on the board. */
-		onBoard: Snowflake | 0;
+		onBoard: 0 | Snowflake;
 		/** The ID of the original message. */
 		source: Snowflake;
 	};
-	strikes: {
+	warn: {
 		/** The ID of the user who was warned. */
 		user: Snowflake;
-		/** The time when this strike was issued. */
-		date: number;
-		id: number | string;
-		count: number;
-		removed: boolean;
+		/** The time when this warn expires. */
+		expiresAt: number;
+		/** The ID of the message in #mod-log with more information. */
+		info: Snowflake;
+	};
+	mute: {
+		/** The ID of the user who was muted. */
+		user: Snowflake;
+		/** The time when this mute is no longer taken into account when calculating future mute times. */
+		expiresAt: number;
 	};
 	xp: {
 		/** The ID of the user. */
@@ -219,7 +186,7 @@ export type Databases = {
 		weeklyPings: boolean;
 		/** Whether to automatically react to their messages with random emojis. */
 		autoreactions: boolean;
-		useMentions: boolean;
+		useMentions?: boolean;
 	};
 	recent_xp: {
 		/** The ID of the user. */

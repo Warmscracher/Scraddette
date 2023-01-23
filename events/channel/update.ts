@@ -1,4 +1,3 @@
-import difflib from "difflib";
 import {
 	ChannelType,
 	escapeMarkdown,
@@ -6,11 +5,10 @@ import {
 	ThreadAutoArchiveDuration,
 	VideoQualityMode,
 } from "discord.js";
-
-import CONSTANTS from "../../common/CONSTANTS.js";
 import log from "../../common/logging.js";
-
+import difflib from "difflib";
 import type Event from "../../common/types/event";
+import CONSTANTS from "../../common/CONSTANTS.js";
 
 const event: Event<"channelUpdate"> = async function event(oldChannel, newChannel) {
 	if (
@@ -21,10 +19,10 @@ const event: Event<"channelUpdate"> = async function event(oldChannel, newChanne
 		return;
 	const edits = [];
 	if (oldChannel.name !== newChannel.name)
-		edits.push(` was renamed to ${escapeMarkdown(newChannel.name)}`);
-	if (oldChannel.type !== newChannel.type) {
+		edits.push(" was renamed to " + escapeMarkdown(newChannel.name));
+	if (oldChannel.type !== newChannel.type)
 		edits.push(
-			` was made into a${
+			" was made into a" +
 				{
 					[ChannelType.GuildText]: " text",
 					[ChannelType.GuildVoice]: " voice",
@@ -32,40 +30,40 @@ const event: Event<"channelUpdate"> = async function event(oldChannel, newChanne
 					[ChannelType.GuildAnnouncement]: "n announcement",
 					[ChannelType.GuildStageVoice]: " stage",
 					[ChannelType.GuildForum]: " forum",
-				}[newChannel.type]
-			} channel`,
+				}[newChannel.type] +
+				" channel",
 		);
-	}
 
 	if (oldChannel.rawPosition !== newChannel.rawPosition)
-		edits.push(` was moved to position ${newChannel.rawPosition}`);
+		edits.push(" was moved to position " + newChannel.rawPosition);
 
 	if (oldChannel.isVoiceBased() && newChannel.isVoiceBased()) {
-		if (oldChannel.bitrate !== newChannel.bitrate)
-			edits.push(`’s bitrate was set to ${newChannel.bitrate}kbps`);
+		oldChannel.bitrate !== newChannel.bitrate &&
+			edits.push("’s bitrate was set to " + newChannel.bitrate + "kbps");
 
-		if (oldChannel.userLimit !== newChannel.userLimit)
+		oldChannel.userLimit !== newChannel.userLimit &&
 			edits.push(
-				`’s user limit was ${
-					newChannel.userLimit ? `set to ${newChannel.userLimit} users` : "removed"
-				}`,
+				"’s user limit was " + newChannel.userLimit
+					? "set to " + newChannel.userLimit + " users"
+					: "removed",
 			);
 
-		if (oldChannel.rtcRegion !== newChannel.rtcRegion)
-			edits.push(`’s region override was set to ${newChannel.rtcRegion || "Automatic"}`);
+		oldChannel.rtcRegion !== newChannel.rtcRegion &&
+			edits.push("’s region override was set to " + newChannel.rtcRegion || "Automatic");
 	}
 
 	if (
 		(oldChannel.type === ChannelType.GuildText || oldChannel.type === ChannelType.GuildForum) &&
 		(newChannel.type === ChannelType.GuildText || newChannel.type === ChannelType.GuildForum)
-	) {
-		if (oldChannel.rateLimitPerUser !== newChannel.rateLimitPerUser)
+	)
+		oldChannel.rateLimitPerUser !== newChannel.rateLimitPerUser &&
 			edits.push(
 				`’s ${
 					newChannel.type === ChannelType.GuildForum ? "post " : ""
-				}slowmode was set to ${newChannel.rateLimitPerUser} seconds`,
+				}slowmode was set to ` +
+					newChannel.rateLimitPerUser +
+					" seconds",
 			);
-	}
 
 	if (
 		(oldChannel.type === ChannelType.GuildText ||
@@ -79,7 +77,7 @@ const event: Event<"channelUpdate"> = async function event(oldChannel, newChanne
 			edits.push(` was made ${newChannel.nsfw ? "" : "non-"}age-restricted`);
 
 		if (oldChannel.topic !== newChannel.topic) {
-			await log(
+			log(
 				`<:updatechannel:1041829394945146921> Channel ${newChannel.toString()}’s topic was changed!`,
 				"channels",
 				{
@@ -88,14 +86,13 @@ const event: Event<"channelUpdate"> = async function event(oldChannel, newChanne
 							attachment: Buffer.from(
 								difflib
 									.unifiedDiff(
-										(oldChannel.topic ?? "").split("\n"),
-										(newChannel.topic ?? "").split("\n"),
+										(oldChannel.topic || "").split("\n"),
+										(newChannel.topic || "").split("\n"),
 									)
 									.join("\n")
 									.replace(/^--- \n{2}\+\+\+ \n{2}@@ .+ @@\n{2}/, ""),
-								"utf8",
+								"utf-8",
 							),
-
 							name: "topic.diff",
 						},
 					],
@@ -103,74 +100,68 @@ const event: Event<"channelUpdate"> = async function event(oldChannel, newChanne
 			);
 		}
 
-		if (oldChannel.defaultAutoArchiveDuration !== newChannel.defaultAutoArchiveDuration)
+		oldChannel.defaultAutoArchiveDuration !== newChannel.defaultAutoArchiveDuration &&
 			edits.push(
-				`’s hide after inactivity time was set to ${
+				"’s hide after inactivity time was set to " +
 					{
 						[ThreadAutoArchiveDuration.OneHour]: "1 Hour",
 						[ThreadAutoArchiveDuration.OneDay]: "24 Hours",
 						[ThreadAutoArchiveDuration.ThreeDays]: "3 Days",
 						[ThreadAutoArchiveDuration.OneWeek]: "1 Week",
-					}[newChannel.defaultAutoArchiveDuration || ThreadAutoArchiveDuration.OneDay]
-				}` || newChannel.defaultAutoArchiveDuration,
+					}[newChannel.defaultAutoArchiveDuration || ThreadAutoArchiveDuration.OneDay] ||
+					newChannel.defaultAutoArchiveDuration,
 			);
 	}
 
 	if (oldChannel.type === ChannelType.GuildForum && newChannel.type === ChannelType.GuildForum) {
-		// TODO // oldChannel.availableTags;
+		oldChannel.availableTags; // TODO
 
 		if (
 			oldChannel.defaultReactionEmoji?.id !== newChannel.defaultReactionEmoji?.id ||
 			oldChannel.defaultReactionEmoji?.name !== newChannel.defaultReactionEmoji?.name
 		) {
 			edits.push(
-				`’s default reaction${
-					newChannel.defaultReactionEmoji
-						? ` was set to ${
-								newChannel.defaultReactionEmoji.name ||
-								`<:_:${newChannel.defaultReactionEmoji.id}>`
-						  }`
-						: " removed"
-				}`,
+				"’s default reaction" +
+					(newChannel.defaultReactionEmoji
+						? " was set to " +
+						  (newChannel.defaultReactionEmoji.name ||
+								`<:${newChannel.defaultReactionEmoji.name}:${newChannel.defaultReactionEmoji.id}>`)
+						: " removed"),
 			);
 		}
 
-		if (oldChannel.rateLimitPerUser !== newChannel.rateLimitPerUser)
-			edits.push(`’s message slowmode was set to ${newChannel.rateLimitPerUser} seconds`);
-
-		if (oldChannel.defaultSortOrder !== newChannel.defaultSortOrder)
+		oldChannel.rateLimitPerUser !== newChannel.rateLimitPerUser &&
 			edits.push(
-				`’s sort order was ${
-					newChannel.defaultSortOrder
-						? `set to ${
-								{
-									[SortOrderType.CreationDate]: "Creation Time",
-									[SortOrderType.LatestActivity]: "Recent Activity",
-								}[newChannel.defaultSortOrder]
-						  }`
-						: "unset"
-				}`,
+				`’s message slowmode was set to ` + newChannel.rateLimitPerUser + " seconds",
+			);
+
+		oldChannel.defaultSortOrder !== newChannel.defaultSortOrder &&
+			edits.push(
+				`’s sort order was set to ` +
+					{
+						[SortOrderType.CreationDate]: "Creation Time",
+						[SortOrderType.LatestActivity]: "Recent Activity",
+					}[newChannel.defaultSortOrder || 0] +
+					" seconds",
 			);
 	}
 
-	if (oldChannel.type === ChannelType.GuildVoice && newChannel.type === ChannelType.GuildVoice) {
-		if (oldChannel.videoQualityMode !== newChannel.videoQualityMode)
+	if (oldChannel.type === ChannelType.GuildVoice && newChannel.type === ChannelType.GuildVoice)
+		oldChannel.videoQualityMode !== newChannel.videoQualityMode &&
 			edits.push(
 				`’s video quality set to ${
 					{ [VideoQualityMode.Auto]: "Auto", [VideoQualityMode.Full]: "720p" }[
-						newChannel.videoQualityMode ?? VideoQualityMode.Auto // TODO: is the correct default?
+						newChannel.videoQualityMode || VideoQualityMode.Auto
 					]
 				}`,
 			);
-	}
 
 	await Promise.all(
-		edits.map(
-			async (edit) =>
-				await log(
-					`<:updatechannel:1041829394945146921> Channel ${newChannel.toString()}${edit}!`,
-					"channels",
-				),
+		edits.map((edit) =>
+			log(
+				`<:updatechannel:1041829394945146921> Channel ${newChannel.toString()}${edit}!`,
+				"channels",
+			),
 		),
 	);
 };

@@ -1,9 +1,18 @@
 import { escapeMarkdown, hyperlink } from "discord.js";
 
 /**
- * Escape text for use in a link’s display or in a message sent by a webhook.
+ * Escape text.
  *
- * @deprecated Djs has this. Does the first line need to be backported?
+ * @param {string} text - The text to escape.
+ *
+ * @returns {string} The escaped text.
+ */
+export function escapeMessage(text) {
+	return escapeLinks(escapeMarkdown(text));
+}
+
+/**
+ * Escape text for use in a link’s display or in a message sent by a webhook.
  *
  * @param {string} text - The text to escape.
  *
@@ -16,24 +25,9 @@ export function escapeLinks(text) {
 }
 
 /**
- * Escape text.
+ * @param {string} text
  *
- * @deprecated Djs has this.
- *
- * @param {string} text - The text to escape.
- *
- * @returns {string} The escaped text.
- */
-export function escapeMessage(text) {
-	return escapeMarkdown(text, { maskedLink: true });
-}
-
-/**
- * Strip all markdown from a string.
- *
- * @param {string} text - String to strip.
- *
- * @returns {string} - Stripped string.
+ * @returns
  */
 export function stripMarkdown(text) {
 	return text.replaceAll(
@@ -43,46 +37,16 @@ export function stripMarkdown(text) {
 }
 
 /**
- * Generate a Markdown tooltip.
+ * Generate a Markdown link to the current channel with a tooltip.
  *
- * @param {import("discord.js").TextBasedChannel} channel - The channel the tooltip will be sent in.
+ * @param {import("discord.js").TextBasedChannel} channel
  * @param {string} display - The displayed text.
  * @param {string | undefined} tooltipText - The tooltip text.
  *
  * @returns {string} - The link.
- *
- * @todo Just use escapeMaskedLink (waiting on https://github.com/discordjs/discord.js/pull/8944)
  */
 export function generateTooltip(channel, display, tooltipText) {
 	return tooltipText
-		? hyperlink(
-				escapeMarkdown(display, {
-					codeBlock: false,
-					inlineCode: false,
-					bold: false,
-					italic: false,
-					underline: false,
-					strikethrough: false,
-					spoiler: false,
-					codeBlockContent: false,
-					inlineCodeContent: false,
-					escape: false,
-					maskedLink: true,
-				}),
-				channel?.url || "",
-				tooltipText,
-		  )
-		: escapeMarkdown(display, {
-				codeBlock: false,
-				inlineCode: false,
-				bold: false,
-				italic: false,
-				underline: false,
-				strikethrough: false,
-				spoiler: false,
-				codeBlockContent: false,
-				inlineCodeContent: false,
-				escape: false,
-				maskedLink: true,
-		  });
+		? hyperlink(escapeLinks(display), channel?.url || "", tooltipText)
+		: escapeLinks(display);
 }

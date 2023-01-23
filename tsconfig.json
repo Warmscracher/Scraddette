@@ -5,12 +5,10 @@
 		"baseUrl": ".",
 		"checkJs": true,
 		"esModuleInterop": true,
-		"exactOptionalPropertyTypes": false,
 		"experimentalDecorators": true,
 		"forceConsistentCasingInFileNames": true,
-		"importHelpers": true,
 		"importsNotUsedAsValues": "error",
-		"lib": ["ESNext", "DOM"],
+		"lib": ["dom", "ES2022"],
 		"maxNodeModuleJsDepth": 0,
 		"module": "ESNext",
 		"moduleResolution": "Node",
@@ -22,16 +20,18 @@
 		"noUncheckedIndexedAccess": true,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
-		"outDir": "dist",
-		"resolveJsonModule": true,
-		"skipLibCheck": false,
 		"strict": true,
 		"stripInternal": true,
 		"target": "ES2021",
 		"useDefineForClassFields": true,
-		"useUnknownInCatchVariables": true
+		"useUnknownInCatchVariables": true,
+		"importHelpers": true,
+		"outDir": "dist",
+		"skipLibCheck": false,
+		"resolveJsonModule": true,
+		"exactOptionalPropertyTypes": false
 	},
 	"exclude": ["node_modules", ".git", "dist"],
-	"include": ["./*", "./.*", "./**/*", "./.**/*"], // TODO: idt we need this
+	"include": ["./*", "./.*", "./**/*", "./.**/*"],
 	"typeAcquisition": { "enable": true }
 }

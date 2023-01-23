@@ -1,14 +1,13 @@
-import changeNickname from "../common/nicknames.js";
 import CONSTANTS from "../common/CONSTANTS.js";
+import { changeNickname } from "../common/automod.js";
 import log from "../common/logging.js";
-
 import type Event from "../common/types/event";
 
-const event: Event<"userUpdate"> = async function event(oldUser, partialUser) {
-	const newUser = partialUser.partial ? await partialUser.fetch() : partialUser;
+const event: Event<"userUpdate"> = async function event(oldUser, newUser) {
+	newUser = await newUser.fetch();
 
 	if (oldUser.tag !== newUser.tag) {
-		await log(
+		log(
 			`👤 User ${newUser.toString()} changed their username from ${oldUser.tag} to ${
 				newUser.tag
 			}!`,
@@ -16,7 +15,7 @@ const event: Event<"userUpdate"> = async function event(oldUser, partialUser) {
 		);
 	}
 	if (oldUser.displayAvatarURL() !== newUser.displayAvatarURL()) {
-		const response = await fetch(newUser.displayAvatarURL({ forceStatic: false, size: 128 }));
+		const response = await fetch(newUser.displayAvatarURL({ size: 128, forceStatic: false }));
 		await log(`👤 User ${newUser.toString()} changed their avatar!`, "members", {
 			files: [Buffer.from(await response.arrayBuffer())],
 		});

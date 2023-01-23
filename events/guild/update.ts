@@ -1,4 +1,3 @@
-import difflib from "difflib";
 import {
 	GuildDefaultMessageNotifications,
 	GuildExplicitContentFilter,
@@ -6,11 +5,10 @@ import {
 	GuildNSFWLevel,
 	GuildVerificationLevel,
 } from "discord.js";
-
-import CONSTANTS from "../../common/CONSTANTS.js";
 import log from "../../common/logging.js";
-
+import difflib from "difflib";
 import type Event from "../../common/types/event";
+import CONSTANTS from "../../common/CONSTANTS.js";
 
 const event: Event<"guildUpdate"> = async function event(oldGuild, newGuild) {
 	if (newGuild.id !== CONSTANTS.guild.id) return;
@@ -18,16 +16,16 @@ const event: Event<"guildUpdate"> = async function event(oldGuild, newGuild) {
 	const logs = [];
 	if (oldGuild.afkChannel?.id !== newGuild.afkChannel?.id) {
 		logs.push(
-			`Inactive channel set to ${newGuild.afkChannel?.toString() ?? "No inactive channel"}`,
+			`Inactive channel set to ${newGuild.afkChannel?.toString() || "No inactive channel"}`,
 		);
 	}
-	if (oldGuild.afkTimeout !== newGuild.afkTimeout)
+	if (oldGuild.afkTimeout !== newGuild.afkTimeout) {
 		logs.push(`Inactive timeout set to ${newGuild.afkTimeout}`);
-
+	}
 	if (oldGuild.bannerURL() !== newGuild.bannerURL()) {
 		const bannerURL = newGuild.bannerURL({ size: 128, forceStatic: false });
 		const response = bannerURL && (await fetch(bannerURL));
-		await log(`✏ Server banner background was ${response ? "changed" : "removed"}!`, "server", {
+		await log(`✏ Server banner background was ${response ? `changed` : "removed"}!`, "server", {
 			files: response ? [Buffer.from(await response.arrayBuffer())] : [],
 		});
 	}
@@ -42,20 +40,19 @@ const event: Event<"guildUpdate"> = async function event(oldGuild, newGuild) {
 		);
 	}
 	if (oldGuild.description !== newGuild.description) {
-		await log("✏ Server description was changed!", "server", {
+		log(`✏ Server description was changed!`, "server", {
 			files: [
 				{
 					attachment: Buffer.from(
 						difflib
 							.unifiedDiff(
-								(oldGuild.description ?? "").split("\n"),
-								(newGuild.description ?? "").split("\n"),
+								(oldGuild.description || "").split("\n"),
+								(newGuild.description || "").split("\n"),
 							)
 							.join("\n")
 							.replace(/^--- \n{2}\+\+\+ \n{2}@@ .+ @@\n{2}/, ""),
-						"utf8",
+						"utf-8",
 					),
-
 					name: "description.diff",
 				},
 			],
@@ -65,7 +62,7 @@ const event: Event<"guildUpdate"> = async function event(oldGuild, newGuild) {
 		const discoverySplashURL = newGuild.discoverySplashURL({ size: 128, forceStatic: false });
 		const response = discoverySplashURL && (await fetch(discoverySplashURL));
 		await log(
-			`✏ Server discovery listing cover image ${response ? "changed" : "removed"}!`,
+			`✏ Server discovery listing cover image ${response ? `changed` : "removed"}!`,
 			"server",
 			{ files: response ? [Buffer.from(await response.arrayBuffer())] : [] },
 		);
@@ -75,18 +72,16 @@ const event: Event<"guildUpdate"> = async function event(oldGuild, newGuild) {
 			`Explicit media content filter set to "${
 				{
 					[GuildExplicitContentFilter.Disabled]: "Don't scan any media content.",
-
 					[GuildExplicitContentFilter.MembersWithoutRoles]:
 						"Scan media content from members without a role.",
-
 					[GuildExplicitContentFilter.AllMembers]: "Scan media content from all members.",
 				}[newGuild.explicitContentFilter]
 			}"`,
 		);
 	}
-	if (oldGuild.features.includes("COMMUNITY") !== newGuild.features.includes("COMMUNITY"))
+	if (oldGuild.features.includes("COMMUNITY") !== newGuild.features.includes("COMMUNITY")) {
 		logs.push(`Community ${newGuild.features.includes("COMMUNITY") ? "en" : "dis"}abled`);
-
+	}
 	if (oldGuild.features.includes("DISCOVERABLE") !== newGuild.features.includes("DISCOVERABLE")) {
 		logs.push(
 			`Server Discovery ${newGuild.features.includes("DISCOVERABLE") ? "en" : "dis"}abled`,
@@ -102,9 +97,9 @@ const event: Event<"guildUpdate"> = async function event(oldGuild, newGuild) {
 	if (
 		oldGuild.features.includes("INVITES_DISABLED") !==
 		newGuild.features.includes("INVITES_DISABLED")
-	)
+	) {
 		logs.push(`Invites ${newGuild.features.includes("INVITES_DISABLED") ? "" : "un"}paused`);
-
+	}
 	if (
 		oldGuild.features.includes("HAS_DIRECTORY_ENTRY") !==
 		newGuild.features.includes("HAS_DIRECTORY_ENTRY")
@@ -115,9 +110,9 @@ const event: Event<"guildUpdate"> = async function event(oldGuild, newGuild) {
 			}ed from a directory channel`,
 		);
 	}
-	if (oldGuild.features.includes("HUB") !== newGuild.features.includes("HUB"))
+	if (oldGuild.features.includes("HUB") !== newGuild.features.includes("HUB")) {
 		logs.push(`Server ${newGuild.features.includes("HUB") ? "" : "un"}made a Student Hub`);
-
+	}
 	if (
 		oldGuild.features.includes("LINKED_TO_HUB") !== newGuild.features.includes("LINKED_TO_HUB")
 	) {
@@ -170,7 +165,7 @@ const event: Event<"guildUpdate"> = async function event(oldGuild, newGuild) {
 	if (oldGuild.iconURL() !== newGuild.iconURL()) {
 		const iconURL = newGuild.iconURL({ size: 128, forceStatic: false });
 		const response = iconURL && (await fetch(iconURL));
-		await log(`✏ Server icon ${response ? "changed" : "removed"}!`, "server", {
+		await log(`✏ Server icon ${response ? `changed` : "removed"}!`, "server", {
 			files: response ? [Buffer.from(await response.arrayBuffer())] : [],
 		});
 	}
@@ -181,12 +176,13 @@ const event: Event<"guildUpdate"> = async function event(oldGuild, newGuild) {
 			}abled`,
 		);
 	}
-	if (oldGuild.name !== newGuild.name) logs.push(`Server renamed to ${newGuild.name}`);
-
+	if (oldGuild.name !== newGuild.name) {
+		logs.push(`Server renamed to ${newGuild.name}`);
+	}
 	if (oldGuild.nsfwLevel !== newGuild.nsfwLevel) {
 		logs.push(
-			`Server ${
-				newGuild.nsfwLevel === GuildNSFWLevel.Default
+			"Server " +
+				(newGuild.nsfwLevel === GuildNSFWLevel.Default
 					? "unmarked as NSFW"
 					: `marked as ${
 							{
@@ -194,89 +190,81 @@ const event: Event<"guildUpdate"> = async function event(oldGuild, newGuild) {
 								[GuildNSFWLevel.Safe]: "safe",
 								[GuildNSFWLevel.AgeRestricted]: "13+",
 							}[newGuild.nsfwLevel]
-					  }`
-			}`,
+					  }`),
 		);
 	}
-	if (oldGuild.ownerId !== newGuild.ownerId)
+	if (oldGuild.ownerId !== newGuild.ownerId) {
 		logs.push(`Server transferred to <@${newGuild.ownerId}>`);
-
-	if (oldGuild.partnered !== newGuild.partnered)
+	}
+	if (oldGuild.partnered !== newGuild.partnered) {
 		logs.push(`Server ${newGuild.partnered ? "" : "un"}partnered`);
-
-	if (oldGuild.preferredLocale !== newGuild.preferredLocale)
+	}
+	if (oldGuild.preferredLocale !== newGuild.preferredLocale) {
 		logs.push(`Server primary language switched to ${newGuild.preferredLocale}`);
-
-	if (oldGuild.premiumProgressBarEnabled !== newGuild.premiumProgressBarEnabled)
+	}
+	if (oldGuild.premiumProgressBarEnabled !== newGuild.premiumProgressBarEnabled) {
 		logs.push(`Boost progress bar ${newGuild.premiumProgressBarEnabled ? "shown" : "hidden"}`);
-
+	}
 	if (oldGuild.publicUpdatesChannel?.id !== newGuild.publicUpdatesChannel?.id) {
 		logs.push(
-			`Community updates channel ${
-				newGuild.publicUpdatesChannel
-					? `set to ${newGuild.publicUpdatesChannel.toString()}`
-					: "unset"
-			}`,
+			"Community updates channel " +
+				(newGuild.publicUpdatesChannel
+					? "set to " + newGuild.publicUpdatesChannel.toString()
+					: "unset"),
 		);
 	}
 	if (oldGuild.rulesChannel?.id !== newGuild.rulesChannel?.id) {
 		logs.push(
-			`Rules or guidelines channel ${
-				newGuild.rulesChannel ? `set to ${newGuild.rulesChannel.toString()}` : "unset"
-			}`,
+			"Rules or guidelines channel " +
+				(newGuild.rulesChannel ? "set to " + newGuild.rulesChannel.toString() : "unset"),
 		);
 	}
 	if (oldGuild.splashURL() !== newGuild.splashURL()) {
 		const splashURL = newGuild.splashURL({ size: 128, forceStatic: false });
 		const response = splashURL && (await fetch(splashURL));
-		await log(`✏ Server invite background ${response ? "changed" : "removed"}!`, "server", {
+		await log(`✏ Server invite background ${response ? `changed` : "removed"}!`, "server", {
 			files: response ? [Buffer.from(await response.arrayBuffer())] : [],
 		});
 	}
 	if (oldGuild.systemChannel !== newGuild.systemChannel) {
 		logs.push(
-			`System messages channel ${
-				newGuild.systemChannel ? `set to ${newGuild.systemChannel.toString()}` : "unset"
-			}`,
+			"System messages channel " +
+				(newGuild.systemChannel ? "set to " + newGuild.systemChannel.toString() : "unset"),
 		);
 	}
-	if (oldGuild.vanityURLCode !== newGuild.vanityURLCode)
+	if (oldGuild.vanityURLCode !== newGuild.vanityURLCode) {
 		logs.push(`Custom invite link set to ${newGuild.vanityURLCode}`);
-
+	}
 	if (oldGuild.verificationLevel !== newGuild.verificationLevel) {
 		logs.push(
 			`Verification level set to "${
 				{
 					[GuildVerificationLevel.None]: "Unrestricted",
-
 					[GuildVerificationLevel.Low]:
 						"Must have a verified email on their Discord account.",
-
 					[GuildVerificationLevel.Medium]:
 						"Must also be registered on Discord for longer than 5 minutes.",
-
 					[GuildVerificationLevel.High]:
 						"Must also be a member of this server for longer than 10 minutes.",
-
 					[GuildVerificationLevel.VeryHigh]:
 						"Must have a verified phone on their Discord account.",
 				}[newGuild.verificationLevel]
 			}"`,
 		);
 	}
-	if (oldGuild.verified !== newGuild.verified)
+	if (oldGuild.verified !== newGuild.verified) {
 		logs.push(`Server ${newGuild.verified ? "" : "un"}verified`);
-
-	if ((oldGuild.widgetChannel ?? newGuild.rulesChannel)?.id !== newGuild.widgetChannel?.id) {
+	}
+	if (newGuild.widgetEnabled && oldGuild.widgetChannel?.id !== newGuild.widgetChannel?.id) {
 		logs.push(
 			`Server widget invite channel ${
-				newGuild.widgetChannel ? `set to ${newGuild.widgetChannel.toString()}` : "unset"
+				newGuild.widgetChannel ? "set to " + newGuild.widgetChannel.toString() : "unset"
 			}`,
 		);
 	}
-	if ((oldGuild.widgetEnabled ?? true) !== (newGuild.widgetEnabled ?? true))
+	if (!!oldGuild.widgetEnabled !== !!newGuild.widgetEnabled) {
 		logs.push(`Server widget ${newGuild.widgetEnabled ? "en" : "dis"}abled`);
-
+	}
 	if (oldGuild.maxVideoChannelUsers !== newGuild.maxVideoChannelUsers) {
 		logs.push(
 			`The max number of users allowed in a video channel changed to ${newGuild.maxVideoChannelUsers}`,
@@ -323,6 +311,6 @@ const event: Event<"guildUpdate"> = async function event(oldGuild, newGuild) {
 		);
 	}
 
-	await Promise.all(logs.map(async (edit) => await log(`✏ ${edit}!`, "server")));
+	await Promise.all(logs.map((edit) => log("✏ " + edit + `!`, "server")));
 };
 export default event;

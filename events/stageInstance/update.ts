@@ -1,17 +1,15 @@
-import difflib from "difflib";
-
 import client from "../../client.js";
-import CONSTANTS from "../../common/CONSTANTS.js";
 import log from "../../common/logging.js";
-
+import difflib from "difflib";
 import type Event from "../../common/types/event";
+import CONSTANTS from "../../common/CONSTANTS.js";
 
 const event: Event<"stageInstanceUpdate"> = async function event(oldInstance, newInstance) {
-	const guild = newInstance.guild ?? (await client.guilds.fetch(newInstance.guildId));
+	const guild = newInstance.guild || (await client.guilds.fetch(newInstance.guildId));
 	if (!oldInstance || guild.id !== CONSTANTS.guild.id) return;
 
 	if (oldInstance.topic !== newInstance.topic) {
-		await log(
+		log(
 			`<:updatestage:1042403128705810462> Stage ${newInstance.channel?.toString()}’s topic was changed!`,
 			"voice",
 			{
@@ -25,9 +23,8 @@ const event: Event<"stageInstanceUpdate"> = async function event(oldInstance, ne
 								)
 								.join("\n")
 								.replace(/^--- \n{2}\+\+\+ \n{2}@@ .+ @@\n{2}/, ""),
-							"utf8",
+							"utf-8",
 						),
-
 						name: "topic.diff",
 					},
 				],

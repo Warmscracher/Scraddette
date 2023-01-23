@@ -8,15 +8,14 @@
  * @param {(value: T, index: number, array: T[]) => Promise<X | false>} predicate - A function to asynchronously test each element for a
  *   condition.
  *
- * @returns {AsyncGenerator<Awaited<X>, void, unknown>} - The generator.
+ * @returns {AsyncGenerator<Awaited<X>, void, unknown>}
  */
 export async function* asyncFilter(array, predicate) {
 	for (const [index, value] of array.entries()) {
-		// eslint-disable-next-line no-await-in-loop -- This is the whole point of this function.
 		const newValue = await predicate(value, index, array);
-
 		if (newValue !== false) yield newValue;
 	}
+	return;
 }
 
 /**
@@ -31,11 +30,11 @@ export async function* asyncFilter(array, predicate) {
  */
 export async function firstTrueyPromise(promises) {
 	const newPromises = promises.map(
-		async (promise) =>
-			await new Promise((resolve, reject) => {
+		(promise) =>
+			new Promise((resolve, reject) => {
 				promise
 					.then((resolved) => {
-						if (resolved) resolve(resolved);
+						if (resolved) resolve(true);
 					})
 					.catch(reject);
 			}),

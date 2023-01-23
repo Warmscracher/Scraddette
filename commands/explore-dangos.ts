@@ -2,11 +2,11 @@ import {
 	ChannelType,
 	ButtonStyle,
 	CategoryChannel,
-	type APIInteractionDataResolvedChannel,
-	type GuildBasedChannel,
-	type Snowflake,
+	APIInteractionDataResolvedChannel,
+	GuildBasedChannel,
+	Snowflake,
 	ComponentType,
-	type InteractionReplyOptions,
+	InteractionReplyOptions,
 	ApplicationCommandOptionType,
 } from "discord.js";
 
@@ -17,10 +17,10 @@ import {
 	BOARD_EMOJI,
 } from "../common/board.js";
 import CONSTANTS from "../common/CONSTANTS.js";
-import { defineCommand } from "../common/types/command.js";
-import { disableComponents } from "../util/discord.js";
 import { asyncFilter, firstTrueyPromise } from "../util/promises.js";
 import { generateHash } from "../util/text.js";
+import { disableComponents } from "../util/discord.js";
+import { defineCommand } from "../common/types/command.js";
 
 /**
  * Determine if a text-based channel is a match of a guild-based channel.
@@ -49,7 +49,7 @@ async function textChannelMatches(
 			return await firstTrueyPromise(
 				fetchedChannel.children
 					.valueOf()
-					.map(async (child) => await textChannelMatches(child, channelFound)),
+					.map((child) => textChannelMatches(child, channelFound)),
 			);
 		}
 		case ChannelType.GuildForum:
@@ -72,9 +72,19 @@ const defaultMinReactions = Math.round(boardReactionCount() * 0.4);
 const command = defineCommand({
 	data: {
 		description: `Replies with a random message that has ${BOARD_EMOJI} reactions`,
-
 		options: {
+			"minimum-reactions": {
+				type: ApplicationCommandOptionType.Integer,
+				description: `Filter messages to only get those with at least this many reactions (defaults to ${defaultMinReactions})`,
+				min_value: 1,
+			},
+			"user": {
+				type: ApplicationCommandOptionType.User,
+				description: "Filter messages to only get those by a certain user",
+			},
 			"channel": {
+				type: ApplicationCommandOptionType.Channel,
+				description: "Filter messages to only get those in a certain channel",
 				channelTypes: [
 					ChannelType.GuildText,
 					ChannelType.GuildVoice,
@@ -85,20 +95,6 @@ const command = defineCommand({
 					ChannelType.PrivateThread,
 					ChannelType.GuildForum,
 				],
-
-				description: "Filter messages to only get those in a certain channel",
-				type: ApplicationCommandOptionType.Channel,
-			},
-
-			"minimum-reactions": {
-				description: `Filter messages to only get those with at least this many reactions (defaults to ${defaultMinReactions})`,
-				minValue: 1,
-				type: ApplicationCommandOptionType.Integer,
-			},
-
-			"user": {
-				description: "Filter messages to only get those by a certain user",
-				type: ApplicationCommandOptionType.User,
 			},
 		},
 	},
@@ -109,28 +105,27 @@ const command = defineCommand({
 			interaction.options.getInteger("minimum-reactions") ?? defaultMinReactions;
 		const user = interaction.options.getUser("user")?.id;
 		const channelWanted = interaction.options.getChannel("channel");
-		const { data } = boardDatabase;
+		const data = boardDatabase.data;
 		const fetchedMessages = asyncFilter(
 			data.sort(() => Math.random() - 0.5),
-			async (message) =>
-				message.reactions >= minReactions &&
-				(user ? message.user === user : true) &&
-				(channelWanted ? await textChannelMatches(channelWanted, message.channel) : true) &&
-				message,
+			async (message) => {
+				return (
+					message.reactions >= minReactions &&
+					(user ? message.user === user : true) &&
+					(channelWanted
+						? await textChannelMatches(channelWanted, message.channel)
+						: true) &&
+					message
+				);
+			},
 		);
 
 		const nextId = generateHash("next");
-		const previousId = generateHash("prev");
+		const prevId = generateHash("prev");
 
 		const messages: InteractionReplyOptions[] = [];
-		// eslint-disable-next-line fp/no-let -- This needs to change.
 		let index = 0;
 
-		/**
-		 * Get the next message to reply with.
-		 *
-		 * @returns The reply information.
-		 */
 		async function getNextMessage(): Promise<InteractionReplyOptions> {
 			const info = (await fetchedMessages.next()).value;
 
@@ -140,18 +135,17 @@ const command = defineCommand({
 							index > 0
 								? [
 										{
-											custom_id: previousId,
 											label: "<< Previous",
+											custom_id: prevId,
 											style: ButtonStyle.Primary,
 											type: ComponentType.Button,
 										},
 								  ]
 								: [],
-
 						post: [
 							{
-								custom_id: nextId,
 								label: "Next >>",
+								custom_id: nextId,
 								style: ButtonStyle.Primary,
 								type: ComponentType.Button,
 							},
@@ -159,21 +153,20 @@ const command = defineCommand({
 				  })
 				: {
 						allowedMentions: { users: [] },
-
+						files: [],
 						components:
 							index > 0
 								? [
 										{
+											type: ComponentType.ActionRow,
 											components: [
 												{
-													customId: previousId,
 													label: "<< Previous",
+													customId: prevId,
 													style: ButtonStyle.Primary,
 													type: ComponentType.Button,
 												},
 											],
-
-											type: ComponentType.ActionRow,
 										},
 								  ]
 								: [],
@@ -182,13 +175,12 @@ const command = defineCommand({
 
 						embeds: [],
 						ephemeral: true,
-						files: [],
 				  };
 
 			if (!reply) {
 				boardDatabase.data = data.filter(({ source }) => source !== info?.source);
 
-				return await getNextMessage();
+				return getNextMessage();
 			}
 			messages.push(reply);
 			return reply;
@@ -198,18 +190,18 @@ const command = defineCommand({
 
 		const collector = reply.createMessageComponentCollector({
 			filter: (buttonInteraction) =>
-				[previousId, nextId].includes(buttonInteraction.customId) &&
+				[prevId, nextId].includes(buttonInteraction.customId) &&
 				buttonInteraction.user.id === interaction.user.id,
 
 			time: CONSTANTS.collectorTime,
 		});
 
 		collector
-			.on("collect", async (buttonInteraction) => {
-				await buttonInteraction.deferUpdate();
-				if (buttonInteraction.customId === previousId) index--;
+			?.on("collect", async (buttonInteraction) => {
+				buttonInteraction.deferUpdate();
+				if (buttonInteraction.customId === prevId) index--;
 				else index++;
-				await interaction.editReply(messages[Number(index)] ?? (await getNextMessage()));
+				await interaction.editReply(messages[index] || (await getNextMessage()));
 
 				collector.resetTimer();
 			})

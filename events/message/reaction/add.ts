@@ -1,21 +1,20 @@
+import { BOARD_EMOJI, updateBoard } from "../../../common/board.js";
+import warn from "../../../common/warns.js";
+import { censor, badWordsAllowed } from "../../../common/automod.js";
+import CONSTANTS from "../../../common/CONSTANTS.js";
 import client from "../../../client.js";
 import { suggestionsDatabase } from "../../../commands/get-top-suggestions.js";
-import { BOARD_EMOJI, updateBoard } from "../../../common/board.js";
-import censor, { badWordsAllowed } from "../../../common/language.js";
-import CONSTANTS from "../../../common/CONSTANTS.js";
-import warn from "../../../common/punishments.js";
-
 import type Event from "../../../common/types/event";
 
-const event: Event<"messageReactionAdd"> = async function event(partialReaction, partialUser) {
-	const reaction = partialReaction.partial ? await partialReaction.fetch() : partialReaction;
+const event: Event<"messageReactionAdd"> = async function event(reaction, user) {
+	if (reaction.partial) reaction = await reaction.fetch();
 
 	const message = reaction.message.partial ? await reaction.message.fetch() : reaction.message;
 
 	// Ignore other servers
 	if (!message.inGuild() || message.guild.id !== CONSTANTS.guild.id) return;
 
-	const user = partialUser.partial ? await partialUser.fetch() : partialUser;
+	if (user.partial) user = await user.fetch();
 
 	const { emoji } = reaction;
 
@@ -24,9 +23,9 @@ const event: Event<"messageReactionAdd"> = async function event(partialReaction,
 		if (censored) {
 			await warn(
 				user,
-				"Watch your language!",
+				`Watch your language!`,
 				censored.strikes,
-				`Reacted with:\n:${emoji.name}:`,
+				"Reacted with:\n:" + emoji.name + ":",
 			);
 			await reaction.remove();
 			return;
@@ -42,12 +41,10 @@ const event: Event<"messageReactionAdd"> = async function event(partialReaction,
 		if (defaultEmoji?.id === emoji.id || defaultEmoji?.name === emoji.name) {
 			suggestionsDatabase.data = suggestionsDatabase.data.map((suggestion) =>
 				suggestion.id === message.id
-					? { ...suggestion, count: reaction.count }
+					? { ...suggestion, count: reaction.count || 0 }
 					: suggestion,
 			);
-		} else {
-			await message.reactions.resolve(reaction).users.remove(user);
-		}
+		} else await message.reactions.resolve(reaction)?.users.remove(user);
 	}
 
 	// Ignore when it’s the wrong emoji
@@ -57,7 +54,7 @@ const event: Event<"messageReactionAdd"> = async function event(partialReaction,
 			(user.id === message.author.id && process.env.NODE_ENV === "production") ||
 			// Or if they reacted to a message on the board
 			(message.channel.id === CONSTANTS.channels.board?.id &&
-				message.author.id === client.user.id) ||
+				message.author.id === client.user?.id) ||
 			// Or they reacted to an /explore-potatoes message
 			["explore-potatoes", "explorepotatoes"].includes(message.interaction?.commandName || "")
 		) {

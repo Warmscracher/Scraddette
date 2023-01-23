@@ -1,12 +1,10 @@
-import { Collection, type Snowflake } from "discord.js";
-
+import { Collection, Snowflake } from "discord.js";
 import CONSTANTS from "../../../common/CONSTANTS.js";
+import { changeNickname } from "../../../common/automod.js";
 import log from "../../../common/logging.js";
-import changeNickname from "../../../common/nicknames.js";
 import { nth } from "../../../util/numbers.js";
-import { rolesDatabase } from "./remove.js";
-
 import type Event from "../../../common/types/event";
+import { rolesDatabase } from "./remove.js";
 
 const event: Event<"guildMemberAdd"> = async function event(member) {
 	if (member.guild.id !== CONSTANTS.guild.id) return;
@@ -32,36 +30,35 @@ const event: Event<"guildMemberAdd"> = async function event(member) {
 	];
 
 	await CONSTANTS.channels.welcome?.send(
-		`${CONSTANTS.emojis.misc.join} ${
-			greetings[Math.floor(Math.random() * greetings.length)] ?? ""
-		}${
-			String(CONSTANTS.guild.memberCount).includes("87")
+		CONSTANTS.emojis.misc.join +
+			" " +
+			(greetings[Math.floor(Math.random() * greetings.length)] || "") +
+			(`${CONSTANTS.guild.memberCount}`.includes("87")
 				? " (WAS THAT THE BITE OF 87?!?!?)"
-				: ""
-		}`,
+				: ""),
 	);
 
 	await changeNickname(member, false);
 
-	const inviters = (await CONSTANTS.guild.invites.fetch()).reduce((accumulator, invite) => {
-		const inviter = invite.inviter?.id ?? "";
-		accumulator.set(inviter, (accumulator.get(inviter) ?? 0) + (invite.uses ?? 0));
-		return accumulator;
+	const inviters = (await CONSTANTS.guild.invites.fetch()).reduce((acc, invite) => {
+		const inviter = invite.inviter?.id || "";
+		acc.set(inviter, (acc.get(inviter) || 0) + (invite.uses || 0));
+		return acc;
 	}, new Collection<Snowflake, number>());
 	inviters.map(async (count, user) => {
 		if (count < 20) return;
-		const inviter = await CONSTANTS.guild.members.fetch(user).catch(() => {});
+		const member = await CONSTANTS.guild.members.fetch(user).catch(() => {});
 		if (
-			!inviter ||
-			inviter.id === "279855717203050496" ||
-			inviter.user.bot ||
+			!member ||
+			member.id === "279855717203050496" ||
+			member.user.bot ||
 			!CONSTANTS.roles.epic ||
-			inviter.roles.resolve(CONSTANTS.roles.epic.id)
+			member.roles.resolve(CONSTANTS.roles.epic.id)
 		)
 			return;
-		await inviter.roles.add(CONSTANTS.roles.epic, "Invited 20+ people");
+		await member.roles.add(CONSTANTS.roles.epic, "Invited 20+ people");
 		await CONSTANTS.channels.general?.send(
-			`🎊 ${inviter.toString()} Thanks for inviting 20+ people! Here’s ${CONSTANTS.roles.epic.toString()} as a thank-you.`,
+			`🎊 ${member.toString()} Thanks for inviting 20+ people! Here's ${CONSTANTS.roles.epic.toString()} as a thank-you.`,
 		);
 	});
 

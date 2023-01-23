@@ -1,14 +1,12 @@
-import { ApplicationCommandOptionType, escapeMarkdown, GuildMember } from "discord.js";
-
-import censor from "../common/language.js";
+import { ApplicationCommandOptionType, escapeMarkdown } from "discord.js";
 import CONSTANTS from "../common/CONSTANTS.js";
+import { censor } from "../common/automod.js";
 import { defineCommand } from "../common/types/command.js";
 import { joinWithAnd } from "../util/text.js";
 
 const command = defineCommand({
 	data: {
 		description: "Checks text for language",
-
 		options: {
 			text: {
 				type: ApplicationCommandOptionType.String,
@@ -16,7 +14,6 @@ const command = defineCommand({
 				required: true,
 			},
 		},
-
 		censored: false,
 	},
 
@@ -26,21 +23,14 @@ const command = defineCommand({
 		const words = result && result.words.flat();
 		await interaction.reply({
 			ephemeral: true,
-
 			content: words
-				? `⚠ **${words.length} bad word${words.length > 0 ? "s" : ""} detected**!\n${
-						interaction.member instanceof GuildMember &&
-						CONSTANTS.roles.mod &&
-						interaction.member.roles.resolve(CONSTANTS.roles.mod.id)
-							? `That text gives **${Math.trunc(result.strikes)} strike${
-									result.strikes === 1 ? "" : "s"
-							  }**.\n\n`
-							: ""
-				  }**I detected the following words as bad**: ${joinWithAnd(
-						words,
-						(word) => `*${escapeMarkdown(word)}*`,
-				  )}`
-				: `${CONSTANTS.emojis.statuses.yes} No bad words found.`,
+				? `⚠ **${words.length} bad word${words.length ? "s" : ""} detected**!\n` +
+				  `Posting that text would give you **${result.strikes} strike${
+						result.strikes === 1 ? "" : "s"
+				  }**, ${result.strikes ? "so don’t" : "but please don’t still"}.\n\n` +
+				  "**I detected the following words as bad**: " +
+				  joinWithAnd(words, (word) => "*" + escapeMarkdown(word) + "*")
+				: CONSTANTS.emojis.statuses.yes + " No bad words found.",
 		});
 	},
 });
