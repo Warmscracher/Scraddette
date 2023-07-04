@@ -30,14 +30,6 @@ jobs:
                   commit_message: Bump dependencies
                   branch: ${{ github.head_ref }}
 
-            - name: Comment
-              if: steps.commit.outputs.changes_detected == 'true'
-              run: |
-                  body="$(cat ${{ steps.sync_types.outputs.output-dir }}/changes.md)$(cat ${{ steps.sync_types.outputs.output-dir }}/sync.md)"
-                  gh api "repos/${{ github.repository }}/commits/${{ steps.commit.outputs.commit_hash }}/comments" -F "body=$body"
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
     format:
         name: Format
         if: startsWith(github.ref_name, 'dependabot/') != true
