@@ -10,9 +10,8 @@ jobs:
     sync:
         runs-on: ubuntu-latest
         steps:
-          - uses: tgymnich/fork-sync@v1.8.0
-            with:
-                github_token: ${{ github.token }}
-                base: main
-                head: main
-                owner: scratchaddons-community
+          - run: gh repo sync $REPOSITORY -b $BRANCH_NAME
+            env:
+                GITHUB_TOKEN: ${{ github.token }}
+                REPOSITORY: ${{ github.repository }}
+                BRANCH_NAME: ${{ github.ref_name }}
