@@ -12,3 +12,4 @@ jobs:
                 github_token: ${{ github.token }}
                 base: main
                 head: main
+                owner: scratchaddons-community
