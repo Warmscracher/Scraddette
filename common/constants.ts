@@ -30,15 +30,16 @@ export default {
 
 		misc: {
 			addon: "<:new_addon:817273401869205524>",
-			join: "<:join:1041863919708418068>",
-			leave: "<:leave:1041863867757756477>",
-			ban: "<:ban:1041864907194388480>",
+			join: "<:join:1041828456578682961>",
+            leave: "<:leave:1041828514929840208>",
+            ban: "<:ban:1041828544617119764>",
 			green: "<:success:1117217865536381030>",
 			blue: "<:primary:1117217909857587210>",
 			challenge: "<:challenge:1117600711665012797>",
 		},
 	},
 
+	
 	urls: {
 		usercountJson: "https://scratchaddons.com/usercount.json",
 		saRepo: "ScratchAddons/ScratchAddons",
