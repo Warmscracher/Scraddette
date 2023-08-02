@@ -11,7 +11,7 @@ import { reactAll } from "../util/discord.js";
 import twemojiRegexp from "../util/twemojiRegexp.js";
 import { defineCommand, defineEvent, client, defineModal } from "strife.js";
 
-const DEFAULT_SHAPES = ["🔺", "🟡", "🟩", "🔷", "💜"];
+const DEFAULT_SHAPES = ["🔺", "🟡", "🟩", "🔷", "💜","♠️"];
 const DEFAULT_VALUES = ["👍 Yes", "👎 No"];
 const bannedReactions = ["🥔"];
 
@@ -30,7 +30,7 @@ defineCommand(
 				type: ApplicationCommandOptionType.Integer,
 				description: "The number of options to have (defaults to 2)",
 				minValue: 1,
-				maxValue: 5,
+				maxValue: 6,
 			},
 			"vote-mode": {
 				type: ApplicationCommandOptionType.Boolean,
